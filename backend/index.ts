@@ -1,12 +1,7 @@
-import express, { type Application } from "express";
+import app from "./src/app";
 import { connectDB } from "./src/db/db";
 
-const app: Application = express();
 const port = process.env.PORT || 3000;
-
-app.get("/health-check", (req, res) => {
-  res.send("Server is running fine");
-});
 
 connectDB()
   .then(() => {

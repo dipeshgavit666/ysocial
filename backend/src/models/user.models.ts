@@ -12,7 +12,7 @@ export interface IUser extends Document {
   website?: string;
   isVerified: boolean;
   isPrivate: boolean;
-  postcount: number;
+  postCount: number;
   connectionCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -58,7 +58,7 @@ const userSchema = new Schema<IUser>(
       maxlength: [300, "Bio cannot exceed 300 characters"],
     },
     avatarUrl: String,
-    wensite: {
+    website: {
       type: String,
       maxlength: [200, "website length cannot exceed 200 characters"],
     },
@@ -90,4 +90,4 @@ userSchema.index({ username: 1 });
 userSchema.index({ email: 1 });
 userSchema.index({ name: "text", bio: "text" });
 
-const User = mongoose.model<IUser>("User", userSchema);
+export const User = mongoose.model<IUser>("User", userSchema);

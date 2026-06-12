@@ -31,7 +31,7 @@ export interface IPost extends Document {
   isPinned: boolean;
   hashtags: string[];
   mentions: Types.ObjectId[];
-
+  expiredAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -112,6 +112,9 @@ const postSchema = new Schema<IPost>(
         ref: "User",
       },
     ],
+    expiredAt: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );

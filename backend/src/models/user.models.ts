@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import jwt from "jsonwebtoken";
+import jwt, { type Secret } from "jsonwebtoken";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -14,7 +14,7 @@ export interface IUser extends Document {
   isVerified: boolean;
   isPrivate: boolean;
   postCount: number;
-  connectionCount: number;
+  connectionsCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,7 +76,7 @@ const userSchema = new Schema<IUser>(
       default: 0,
       min: 0,
     },
-    connectionCount: {
+    connectionsCount: {
       type: Number,
       default: 0,
       min: 0,
@@ -105,7 +105,7 @@ userSchema.methods.generateAccessToken = function () {
       email: this.email,
       username: this.username,
     },
-    process.env.ACCESS_TOKEN_SECRET!,
+    process.env.ACCESS_TOKEN_SECRET as Secret,
     {
       expiresIn: process.env
         .ACCESS_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
@@ -118,7 +118,7 @@ userSchema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SECRET!,
+    process.env.REFRESH_TOKEN_SECRET as Secret,
     {
       expiresIn: process.env
         .REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],

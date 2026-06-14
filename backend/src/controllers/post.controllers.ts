@@ -5,6 +5,17 @@ import { asyncHander } from "../utils/async-handler";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        _id: string;
+        [key: string]: any;
+      };
+    }
+  }
+}
+
 const createPost = asyncHander(async (req: Request, res: Response) => {
   const { content } = req.body as {
     content: string;
@@ -16,7 +27,7 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
 
   const post = await Post.create({
     content,
-    author: new mongoose.Types.ObjectId(req.user._id),
+    author: new mongoose.Types.ObjectId(req.user!._id),
   });
 
   if (!post) {
@@ -28,23 +39,76 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(201, { post: post }, "Post created successfully"));
 });
 
-const deletePost = asyncHander(async (req: Request, res: Response) => {
-  const { postId } = req.params;
-  const deletedPost = await Post.findByIdAndDelete(postId);
+const updatePost = asyncHander(async (req: Request, res: Response) => {
+  const post = await Post.findById(req.params.id);
 
-  if (!deletedPost) {
-    throw new ApiError(401, "Something went wrong while deleting post");
+  if (!post) {
+    throw new ApiError(404, "Post not found");
   }
+
+  if (post.author.toString() !== req.user?.id.toString()) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  post.content = req.body.cintent;
+  await post.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { post }, "Post updated successfully"));
+});
+
+const deletePost = asyncHander(async (req: Request, res: Response) => {
+  const post = await Post.findById(req.params.id);
+
+  if (!post) {
+    throw new ApiError(404, "Post not found");
+  }
+
+  if (post.author.toString() !== req.user?.id.toString()) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  await post.deleteOne();
 
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "Post was deleted successfully"));
 });
 
-const fetchAllPosts = asyncHander(async (req: Request, res: Response) => {});
+const getAllPosts = asyncHander(async (req: Request, res: Response) => {});
 
-const fetchSinglePost = asyncHander(async (req: Request, res: Response) => {});
+const getSinglePost = asyncHander(async (req: Request, res: Response) => {
+  const singlePost = await Post.findById(req.params.Id).populate("author");
 
-const fetchUserPosts = asyncHander(async (req: Request, res: Response) => {});
+  if (!singlePost) {
+    throw new ApiError(404, "Post not found");
+  }
 
-export { createPost, deletePost };
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { singlePost }, "Post fetched successfully"));
+});
+
+const getUserPosts = asyncHander(async (req: Request, res: Response) => {
+  const usersPosts = await Post.find()
+    .populate("author")
+    .sort({ createdAt: -1 });
+
+  if (!getUserPosts) {
+    throw new ApiError(500, "Failed to fetch posts");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { usersPosts }, "Posts fetched successfully"));
+});
+
+export {
+  createPost,
+  deletePost,
+  getSinglePost,
+  getUserPosts,
+  getAllPosts,
+  updatePost,
+};

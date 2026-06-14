@@ -8,7 +8,6 @@ export interface IPost extends Document {
   content: String;
   visibility: postVisibility;
   replyTo?: Types.ObjectId;
-
   likeCount: number;
   replyCount: number;
   isEdited: boolean;
@@ -40,6 +39,7 @@ const postSchema = new Schema<IPost>(
     replyTo: {
       type: Schema.Types.ObjectId,
       ref: "Post",
+      default: null,
     },
     likeCount: {
       type: Number,

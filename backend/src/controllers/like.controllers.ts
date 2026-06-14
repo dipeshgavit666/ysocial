@@ -1,11 +1,9 @@
 import { Like } from "../models/like.models";
 import { Post } from "../models/post.models";
-import { User } from "../models/user.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHander } from "../utils/async-handler";
 import type { Request, Response } from "express";
-import mongoose from "mongoose";
 
 const toggleLike = asyncHander(async (req: Request, res: Response) => {
   try {

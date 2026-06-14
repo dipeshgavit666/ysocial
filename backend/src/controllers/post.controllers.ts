@@ -106,7 +106,7 @@ const getAllPosts = asyncHander(async (req: Request, res: Response) => {
 });
 
 const getSinglePost = asyncHander(async (req: Request, res: Response) => {
-  const singlePost = await Post.findById(req.params.Id).populate(
+  const singlePost = await Post.findById(req.params.id).populate(
     "author",
     "username",
   );

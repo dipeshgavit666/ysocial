@@ -76,10 +76,40 @@ const deletePost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, {}, "Post was deleted successfully"));
 });
 
-const getAllPosts = asyncHander(async (req: Request, res: Response) => {});
+const getAllPosts = asyncHander(async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Math.min(Number(req.query.limit) || 10, 500);
+
+  const skip = (page - 1) * limit;
+
+  const posts = await Post.find()
+    .populate("author", "username")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  if (!posts) {
+    throw new ApiError(404, "Posts not found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        page,
+        limit,
+        posts,
+      },
+      "Post fetched successfully",
+    ),
+  );
+});
 
 const getSinglePost = asyncHander(async (req: Request, res: Response) => {
-  const singlePost = await Post.findById(req.params.Id).populate("author");
+  const singlePost = await Post.findById(req.params.Id).populate(
+    "author",
+    "username",
+  );
 
   if (!singlePost) {
     throw new ApiError(404, "Post not found");
@@ -91,17 +121,21 @@ const getSinglePost = asyncHander(async (req: Request, res: Response) => {
 });
 
 const getUserPosts = asyncHander(async (req: Request, res: Response) => {
-  const usersPosts = await Post.find()
-    .populate("author")
+  const { userId } = req.params;
+
+  const userPosts = await Post.find({
+    author: userId,
+  })
+    .populate("author", "username")
     .sort({ createdAt: -1 });
 
-  if (!getUserPosts) {
+  if (!userPosts) {
     throw new ApiError(500, "Failed to fetch posts");
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { usersPosts }, "Posts fetched successfully"));
+    .json(new ApiResponse(200, { userPosts }, "Posts fetched successfully"));
 });
 
 export {

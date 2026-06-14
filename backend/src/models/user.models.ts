@@ -13,6 +13,7 @@ export interface IUser extends Document {
   website?: string;
   isVerified: boolean;
   isPrivate: boolean;
+  posts: Types.ObjectId;
   postCount: number;
   connectionsCount: number;
   createdAt: Date;
@@ -70,6 +71,10 @@ const userSchema = new Schema<IUser>(
     isPrivate: {
       type: Boolean,
       default: false,
+    },
+    posts: {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
     },
     postCount: {
       type: Number,

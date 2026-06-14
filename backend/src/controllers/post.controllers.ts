@@ -28,10 +28,23 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(201, { post: post }, "Post created successfully"));
 });
 
-const deletePost = asyncHander(async (req: Request, res: Response) => {});
+const deletePost = asyncHander(async (req: Request, res: Response) => {
+  const { postId } = req.params;
+  const deletedPost = await Post.findByIdAndDelete(postId);
+
+  if (!deletedPost) {
+    throw new ApiError(401, "Something went wrong while deleting post");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Post was deleted successfully"));
+});
 
 const fetchAllPosts = asyncHander(async (req: Request, res: Response) => {});
 
 const fetchSinglePost = asyncHander(async (req: Request, res: Response) => {});
 
 const fetchUserPosts = asyncHander(async (req: Request, res: Response) => {});
+
+export { createPost, deletePost };

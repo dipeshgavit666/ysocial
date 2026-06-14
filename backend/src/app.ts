@@ -18,9 +18,12 @@ app.use(
 );
 
 // import routes
-// import healthCheckRouter from "./routes/healthcheck.routes.js";
+import healthCheckRouter from "./routes/healthcheck.routes.js";
+import postRouter from "./routes/post.routes.js";
 
-// app.use("/api/v1/healthcheck", healthChechRouter)
+app.use("/api/v1/healthcheck", healthCheckRouter);
+
+app.use("/api/v1/posts", postRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Y Social");

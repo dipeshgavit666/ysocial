@@ -1,13 +1,13 @@
-import { Alert } from "./Alert"
-
+import { AuthPage } from "./pages/AuthPage"
+import {Routes, Route } from "react-router";
 function App() {
   
 
   return (
     <>
-    <Alert type= "infornamtion" heading="Success">
-      "Everything is realy good"
-    </Alert>
+    <Routes>
+      <Route path="/auth" element={<AuthPage />}/>
+    </Routes>
     </>
   )
 }

@@ -1,7 +1,10 @@
+import { Login } from "../components/Login"
+
 export function AuthPage() {
     return(
         <>
-        <div>this is auth page</div>
+        <Login></Login>
+        
         </>
     )
 }

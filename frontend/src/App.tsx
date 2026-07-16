@@ -1,15 +1,13 @@
-import { AuthPage } from "./pages/AuthPage"
-import {Routes, Route } from "react-router";
+import { HomePage } from "./pages/HomePage";
+import { Routes, Route } from "react-router";
 function App() {
-  
-
   return (
     <>
-    <Routes>
-      <Route path="/auth" element={<AuthPage />}/>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

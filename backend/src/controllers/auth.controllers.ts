@@ -38,7 +38,8 @@ const generateAccessTokenAndRefreshToken = async (userId: string) => {
 };
 
 const registerUser = asyncHander(async (req, res) => {
-  const { username, email, password } = req.body as {
+  const { name, username, email, password } = req.body as {
+    name: string;
     username: string;
     email: string;
     password: string;
@@ -57,6 +58,7 @@ const registerUser = asyncHander(async (req, res) => {
   }
 
   const user = await User.create({
+    name,
     email,
     username,
     password,

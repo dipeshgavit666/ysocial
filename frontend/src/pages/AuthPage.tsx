@@ -9,7 +9,7 @@ export function AuthPage() {
                 <SignupForm />
             </div>
             
-            {/* <p>alredy have an account the click here</p> */}
+            <p>alredy have an account the <button>click here</button></p>
              
         </div>
     )

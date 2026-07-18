@@ -14,4 +14,12 @@ apiClient.interceptors.response.use(
   },
 );
 
-export { apiClient };
+function get<T>(url: string) {
+  return apiClient.get(url) as unknown as Promise<T>;
+}
+
+function post<T>(url: string, body?: unknown) {
+  return apiClient.post(url, body) as unknown as Promise<T>;
+}
+
+export { get, post };

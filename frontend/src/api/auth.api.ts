@@ -1,28 +1,34 @@
-import { apiClient } from "../lib/api-client";
+import { get, post } from "../lib/api-client";
 
-interface RegisterPayload {
+interface AuthUser {
+  _id: string;
+  username: string;
+  email: string;
+  name: string;
+}
+
+interface LoginResponse {
+  user: AuthUser;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export function register(payload: {
   username: string;
   email: string;
   password: string;
+}) {
+  return post<{ user: AuthUser }>("/auth/register", payload);
 }
 
-interface loginPayload {
-  email: string;
-  password: string;
-}
-
-export function registerPayload(payload: RegisterPayload) {
-  return apiClient.post("auth/register", payload);
-}
-
-export function login(payload: loginPayload) {
-  return apiClient.post("auth/login", payload);
+export function login(payload: { email: string; password: string }) {
+  return post<LoginResponse>("/auth/login", payload);
 }
 
 export function logout() {
-  return apiClient.post("auth/logout");
+  return post<void>("/auth/logout");
 }
 
 export function getCurrentUser() {
-  return apiClient.get("auth/profile");
+  return get<AuthUser>("/auth/profile");
 }

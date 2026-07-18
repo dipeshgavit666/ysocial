@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const apiCliet = axios.create({
+const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
-apiCliet.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response) => response.data.data,
   (error) => {
     const message = error.response?.data?.message || "Something went wrong";
@@ -14,4 +14,4 @@ apiCliet.interceptors.response.use(
   },
 );
 
-export { apiCliet };
+export { apiClient };

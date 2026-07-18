@@ -1,5 +1,5 @@
-import { SigninForm } from "./SigninForm";
-import { SignupForm } from "./SignupForm";
+import { SigninForm } from "../components/SigninForm";
+import { SignupForm } from "../components/SignupForm";
 import { Link } from "react-router";
 
 export function AuthPage() {

@@ -85,15 +85,14 @@ const getAllPosts = asyncHander(async (req: Request, res: Response) => {
 
   const skip = (page - 1) * limit;
 
-  const posts = await Post.find()
+  const posts = await Post.find({
+    visibility: "public",
+    replyTo: "null",
+  })
     .populate("author", "username")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
-
-  if (!posts) {
-    throw new ApiError(404, "Posts not found");
-  }
 
   return res.status(200).json(
     new ApiResponse(

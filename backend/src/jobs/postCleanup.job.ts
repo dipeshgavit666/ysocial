@@ -3,7 +3,7 @@ import { Post } from "../models/post.models";
 import { Like } from "../models/like.models";
 
 export const startPostCleamupJob = () => {
-  corn.schedule("0 ****", async () => {
+  corn.schedule("0 0 * * *", async () => {
     try {
       console.log("[POST CLEANUP] Running cleanup...");
 

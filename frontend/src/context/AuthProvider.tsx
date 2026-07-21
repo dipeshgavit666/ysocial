@@ -32,6 +32,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, []);
 
+  async function register({
+    name,
+    username,
+    email,
+    password,
+  }: {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+  }) {
+    try {
+      const data = await authApi.register({ name, username, email, password });
+      setUser(data.user);
+    } catch (error) {
+      console.error("user registration failed:", error);
+      throw error;
+    }
+  }
+
   async function login({
     email,
     password,
@@ -59,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

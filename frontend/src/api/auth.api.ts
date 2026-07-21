@@ -14,6 +14,7 @@ interface LoginResponse {
 }
 
 export function register(payload: {
+  name: string;
   username: string;
   email: string;
   password: string;

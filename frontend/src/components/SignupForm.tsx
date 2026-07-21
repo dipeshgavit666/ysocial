@@ -3,7 +3,12 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../context/useAuth";
 
 export function SignupForm() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuth();

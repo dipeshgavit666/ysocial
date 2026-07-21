@@ -39,12 +39,12 @@ export function SignupForm() {
       className="bg-[#000000] text-white flex flex-col items-center justify-center  space-y-4"
     >
       <div className=" space-y-4 p-10 rounded-lg">
-        <h1 className="text-4xl">Login</h1>
+        <h1 className="text-4xl">Sign Up</h1>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <input
-          value={formData.email}
+          value={formData.name}
           onChange={handleChange}
           name="name"
           className="w-full rounded-lg border p-3"
@@ -53,7 +53,7 @@ export function SignupForm() {
         />
 
         <input
-          value={formData.email}
+          value={formData.username}
           onChange={handleChange}
           name="username"
           className="w-full rounded-lg border p-3"

@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await authApi.register({ name, username, email, password });
       setUser(data.user);
     } catch (error) {
-      console.error("user registration failed:", error);
+      console.error("Registration failed:", error);
       throw error;
     }
   }

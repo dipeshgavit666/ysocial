@@ -10,7 +10,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  register: (Credentials: {
+  register: (data: {
     name: string;
     username: string;
     email: string;

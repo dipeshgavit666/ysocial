@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../context/useAuth";
-// import { Link } from "react-router";
 
 export function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -32,9 +31,9 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-[#000000] text-white flex flex-col items-center justify-center h-screen space-y-4 p-10"
+      className="bg-[#000000] text-white flex flex-col items-center justify-center  space-y-4"
     >
-      <div className=" space-y-4 p-10 rounded-lg border border-[#434343">
+      <div className=" space-y-4 p-10 rounded-lg">
         <h1 className="text-4xl">Login</h1>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}

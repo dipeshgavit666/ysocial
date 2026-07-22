@@ -5,7 +5,7 @@ export function Navbar() {
   const { user, isLoading, logout } = useAuth();
 
   return (
-    <nav className="bg-[#1a1a1a] p-4">
+    <nav className="bg-neutral-900 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white font-bold text-xl">Y Social</div>
         <div>

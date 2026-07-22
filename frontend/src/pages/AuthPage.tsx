@@ -6,7 +6,7 @@ export function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   return (
-    <div className="bg-[#000000] min-h-screen flex flex-col items-center justify-center">
+    <div className="bg-neutral-950 min-h-screen flex flex-col items-center justify-center">
       {mode === "login" ? <LoginForm /> : <SignupForm />}
 
       <button

@@ -31,9 +31,9 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-[#000000] text-white flex flex-col items-center justify-center  space-y-4"
+      className="bg-neutral-950 text-neutral-50 flex flex-col items-center justify-center min-h-screen space-y-4 p-10"
     >
-      <div className=" space-y-4 p-10 rounded-lg">
+      <div className="space-y-4 p-10 rounded-lg border border-neutral-700">
         <h1 className="text-4xl">Login</h1>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -42,7 +42,7 @@ export function LoginForm() {
           value={formData.email}
           onChange={handleChange}
           name="email"
-          className="w-full rounded-lg border p-3"
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-50 placeholder-neutral-500 p-3"
           type="text"
           placeholder="email"
         />
@@ -51,7 +51,7 @@ export function LoginForm() {
           value={formData.password}
           onChange={handleChange}
           name="password"
-          className="w-full rounded-lg border p-3"
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-50 placeholder-neutral-500 p-3"
           type="password"
           placeholder="password"
         />
@@ -59,7 +59,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-[#d6d6d6] p-3 text-black disabled:opacity-50"
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-50 placeholder-neutral-500 p-3"
         >
           {isSubmitting ? "Logging in..." : "Log In"}
         </button>

@@ -22,10 +22,10 @@ export function HomeFeed() {
     fetchPosts();
   }, []);
 
-  if (isLoading) return <div className="text-white">Loading...</div>;
+  if (isLoading) return <div className="text-neutral-50">Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
   if (posts.length === 0) {
-    return <div className="text-gray-400">No posts yet.</div>;
+    return <div className="text-red-400">No posts yet.</div>;
   }
 
   return (
@@ -33,11 +33,11 @@ export function HomeFeed() {
       {posts.map((post) => (
         <div
           key={post._id}
-          className="border border-gray-700 rounded-lg p-4 text-white"
+          className="border border-neutral-700 rounded-lg p-4 text-neutral-50"
         >
           <p className="font-bold">{post.author.username}</p>
           <p>{post.content}</p>
-          <div className="flex gap-4 text-gray-400 text-sm mt-2">
+          <div className="flex gap-4 text-neutral-400 text-sm mt-2">
             <span>{post.likeCount} likes</span>
             <span>{post.replyCount} replies</span>
           </div>

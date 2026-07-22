@@ -59,7 +59,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg border border-neutral-700 bg-neutral-900 text-neutral-50 placeholder-neutral-500 p-3"
+          className="w-full rounded-lg bg-neutral-300 hover:bg-neutral-100 p-3 text-black disabled:opacity-50"
         >
           {isSubmitting ? "Logging in..." : "Log In"}
         </button>

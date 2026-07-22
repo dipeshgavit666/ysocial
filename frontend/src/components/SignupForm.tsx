@@ -82,9 +82,9 @@ export function SignupForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-[#d6d6d6] p-3 text-black disabled:opacity-50"
+          className="w-full rounded-lg bg-neutral-300 hover:bg-neutral-100 p-3 text-black disabled:opacity-50"
         >
-          {isSubmitting ? "Logging in..." : "Sign Up"}
+          {isSubmitting ? "Signing up..." : "Sign Up"}
         </button>
       </div>
     </form>

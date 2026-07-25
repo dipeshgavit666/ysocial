@@ -87,7 +87,7 @@ const getAllPosts = asyncHander(async (req: Request, res: Response) => {
 
   const posts = await Post.find({
     visibility: "public",
-    replyTo: "null",
+    replyTo: null,
   })
     .populate("author", "username")
     .sort({ createdAt: -1 })

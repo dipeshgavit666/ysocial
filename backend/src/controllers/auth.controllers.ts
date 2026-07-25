@@ -45,8 +45,10 @@ const registerUser = asyncHander(async (req, res) => {
     password: string;
   };
 
+  const normalizedEmail = email.toLowerCase().trim();
+
   const existedUser = await User.findOne({
-    $or: [{ username, email }],
+    $or: [{ username }, { email: normalizedEmail }],
   });
 
   if (existedUser) {
@@ -64,6 +66,9 @@ const registerUser = asyncHander(async (req, res) => {
     password,
   });
 
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id.toString());
+
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken",
   );
@@ -71,6 +76,12 @@ const registerUser = asyncHander(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering a user");
   }
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+  };
 
   return res
     .status(201)
@@ -143,8 +154,9 @@ const logoutUser = asyncHander(async (req: Request, res: Response) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: true,
-  } as const;
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+  };
 
   return res
     .status(200)
@@ -181,8 +193,9 @@ const refreshAccessToken = asyncHander(async (req: Request, res: Response) => {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: true,
-    } as const;
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax" as const,
+    };
 
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessTokenAndRefreshToken(user._id.toString());

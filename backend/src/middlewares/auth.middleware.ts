@@ -31,7 +31,7 @@ export const verifyJWT = asyncHander(
         token,
         process.env.ACCESS_TOKEN_SECRET as string,
       ) as JwtPayload;
-      const user = await User.findById(decodedToken?.id).select(
+      const user = await User.findById(decodedToken?._id).select(
         "-password -refreshToken",
       );
 

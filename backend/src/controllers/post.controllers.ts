@@ -25,7 +25,7 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
     throw new ApiError(401, "Contents is required");
   }
 
-  const expiredAt = new Date(Date.now() * 24 * 60 * 60 * 1000);
+  const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const post = await Post.create({
     content,

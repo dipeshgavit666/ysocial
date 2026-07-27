@@ -33,10 +33,6 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
     expiredAt,
   });
 
-  if (post.author.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, "Unauthorized");
-  }
-
   if (!post) {
     throw new ApiError(500, "Something went wrong while creating a post");
   }

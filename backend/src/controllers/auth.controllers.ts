@@ -100,16 +100,19 @@ const login = asyncHander(async (req, res) => {
   const { email, password } = req.body as {
     email: string;
     password: string;
-    username?: string;
   };
 
   if (!email) {
     throw new ApiError(400, "Email is required");
   }
 
+  if (!password) {
+    throw new ApiError(400, "Password is required");
+  }
+
   const user = (await User.findOne({
     email: email.toLowerCase().trim(),
-  })) as any;
+  }).select("+password")) as any;
 
   if (!user) {
     throw new ApiError(400, "user does not exist");

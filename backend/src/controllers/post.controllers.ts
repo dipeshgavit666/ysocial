@@ -49,7 +49,7 @@ const updatePost = asyncHander(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.author.toString() !== req.user?.id.toString()) {
+  if (post.author.toString() !== req.user?._id.toString()) {
     throw new ApiError(403, "Unauthorized");
   }
 
@@ -68,7 +68,7 @@ const deletePost = asyncHander(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.author.toString() !== req.user?.id.toString()) {
+  if (post.author.toString() !== req.user?._id.toString()) {
     throw new ApiError(403, "Unauthorized");
   }
 

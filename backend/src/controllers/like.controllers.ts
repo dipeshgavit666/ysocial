@@ -7,7 +7,7 @@ import type { Request, Response } from "express";
 
 const toggleLike = asyncHander(async (req: Request, res: Response) => {
   try {
-    const postId = req.params.id as string;
+    const postId = req.params.postId as string;
     const userId = req.user?._id as string;
 
     const existingLike = await Like.findOne({

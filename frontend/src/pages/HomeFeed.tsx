@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAllPosts, createPost } from "../api/post.api";
+import { getAllPosts, createPost, toggleLike } from "../api/post.api";
 import type { Post } from "../api/post.api";
 import { useAuth } from "../context/useAuth";
 
@@ -10,6 +10,45 @@ export function HomeFeed() {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const { user } = useAuth();
+
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+
+  async function handleLike(postId: string) {
+    const alreadyLiked = likedPostIds.has(postId);
+
+    setLikedPostIds((prev) => {
+      const next = new Set(prev);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      alreadyLiked ? next.delete(postId) : next.add(postId);
+      return next;
+    });
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p._id === postId
+          ? { ...p, likeCount: p.likeCount + (alreadyLiked ? -1 : 1) }
+          : p,
+      ),
+    );
+
+    try {
+      await toggleLike(postId);
+    } catch {
+      setLikedPostIds((prev) => {
+        const next = new Set(prev);
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        alreadyLiked ? next.add(postId) : next.delete(postId);
+        return next;
+      });
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, likeCount: p.likeCount + (alreadyLiked ? 1 : -1) }
+            : p,
+        ),
+      );
+    }
+  }
 
   useEffect(() => {
     async function fetchPosts() {
@@ -82,7 +121,12 @@ export function HomeFeed() {
               <p className="font-bold">{post.author.username}</p>
               <p>{post.content}</p>
               <div className="flex gap-4 text-neutral-400 text-sm mt-2">
-                <span>{post.likeCount} likes</span>
+                <button
+                  onClick={() => handleLike(post._id)}
+                  className={`text-sm ${likedPostIds.has(post._id) ? "text-red-500" : "text-neutral-400"}`}
+                >
+                  {likedPostIds.has(post._id) ? "♥" : "♡"} {post.likeCount}
+                </button>
                 <span>{post.replyCount} replies</span>
               </div>
             </div>

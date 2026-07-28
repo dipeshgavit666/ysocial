@@ -1,4 +1,4 @@
-import { get, post } from "../lib/api-client";
+import { get, post, patch } from "../lib/api-client";
 
 export interface Post {
   _id: string;
@@ -21,4 +21,8 @@ export function getAllPosts(page = 1) {
 
 export function createPost(content: string) {
   return post<{ post: Post }>("/posts", { content });
+}
+
+export function toggleLike(postId: string) {
+  return patch<{ liked: boolean }>(`/posts/${postId}/like`);
 }

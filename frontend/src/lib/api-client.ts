@@ -22,4 +22,8 @@ function post<T>(url: string, body?: unknown) {
   return apiClient.post(url, body) as unknown as Promise<T>;
 }
 
-export { get, post };
+function patch<T>(url: string, body?: string) {
+  return apiClient.patch(url, body) as unknown as Promise<T>;
+}
+
+export { get, post, patch };

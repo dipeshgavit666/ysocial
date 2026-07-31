@@ -80,7 +80,9 @@ const registerUser = asyncHander(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      | "none"
+      | "lax",
   };
 
   return res
@@ -134,8 +136,10 @@ const login = asyncHander(async (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-  } as const;
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      | "none"
+      | "lax",
+  };
 
   return res
     .status(200)
@@ -160,7 +164,9 @@ const logoutUser = asyncHander(async (req: Request, res: Response) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      | "none"
+      | "lax",
   };
 
   return res
@@ -199,7 +205,9 @@ const refreshAccessToken = asyncHander(async (req: Request, res: Response) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
+      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+        | "none"
+        | "lax",
     };
 
     const { accessToken, refreshToken: newRefreshToken } =

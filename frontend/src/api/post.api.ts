@@ -15,6 +15,18 @@ interface getPostsResponse {
   posts: Post[];
 }
 
+export function getSinglePost(postId: string) {
+  return get<{ post: Post }>(`/posts/${postId}`);
+}
+
+export function getReplies(postId: string) {
+  return get<{ replies: Post[] }>(`/posts/${postId}/replies`);
+}
+
+export function createReply(postId: string, content: string) {
+  return post<{ reply: Post }>(`/posts/${postId}/replies`, { content });
+}
+
 export function getAllPosts(page = 1) {
   return get<getPostsResponse>(`/posts?page=${page}`);
 }

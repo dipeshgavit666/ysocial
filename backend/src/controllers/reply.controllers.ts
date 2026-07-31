@@ -11,6 +11,10 @@ const createReply = asyncHander(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
+  if (!req.body.content) {
+    throw new ApiError(400, "Content is required");
+  }
+
   const reply = await Post.create({
     author: req.user!._id,
     content: req.body.content,
@@ -23,7 +27,9 @@ const createReply = asyncHander(async (req: Request, res: Response) => {
     },
   });
 
-  return res.status;
+  return res
+    .status(201)
+    .json(new ApiResponse(201, reply, "Reply created successfully"));
 });
 
 const getReplies = asyncHander(async (req: Request, res: Response) => {

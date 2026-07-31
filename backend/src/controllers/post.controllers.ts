@@ -43,7 +43,7 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
 });
 
 const updatePost = asyncHander(async (req: Request, res: Response) => {
-  const post = await Post.findById(req.params.id);
+  const post = await Post.findById(req.params.postId);
 
   if (!post) {
     throw new ApiError(404, "Post not found");
@@ -62,7 +62,7 @@ const updatePost = asyncHander(async (req: Request, res: Response) => {
 });
 
 const deletePost = asyncHander(async (req: Request, res: Response) => {
-  const post = await Post.findById(req.params.id);
+  const post = await Post.findById(req.params.postId);
 
   if (!post) {
     throw new ApiError(404, "Post not found");
@@ -108,7 +108,7 @@ const getAllPosts = asyncHander(async (req: Request, res: Response) => {
 });
 
 const getSinglePost = asyncHander(async (req: Request, res: Response) => {
-  const singlePost = await Post.findById(req.params.id).populate(
+  const singlePost = await Post.findById(req.params.postId).populate(
     "author",
     "username",
   );

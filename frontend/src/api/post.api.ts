@@ -16,7 +16,7 @@ interface getPostsResponse {
 }
 
 export function getSinglePost(postId: string) {
-  return get<{ post: Post }>(`/posts/${postId}`);
+  return get<{ singlePost: Post }>(`/posts/${postId}`);
 }
 
 export function getReplies(postId: string) {

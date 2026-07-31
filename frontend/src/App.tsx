@@ -4,6 +4,7 @@ import { HomeFeed } from "./pages/HomeFeed";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AuthPage } from "./pages/AuthPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PostPage } from "./pages/PostPage";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/profile/:username" element={<ProfilePage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/posts/:postId" element={<PostPage />} />
         </Route>
       </Route>
       <Route path="/auth" element={<AuthPage />} />

@@ -86,6 +86,8 @@ export function HomeFeed() {
   return (
     <div className="bg-neutral-950 text-neutral-50 min-h-screen space-y-4 p-5">
       <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4 w-full rounded-lg border border-neutral-900">
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
         {user && (
           <form
             onSubmit={handleSubmit}

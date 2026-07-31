@@ -57,7 +57,7 @@ export function PostPage() {
   if (!post) return <div className="text-neutral-400">Post not found.</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-4">
+    <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4">
       <div className="border border-neutral-700 rounded-lg p-4">
         <div className="font-semibold text-neutral-50">
           {post.author.username}

@@ -4,7 +4,7 @@ import { HomeFeed } from "./pages/HomeFeed";
 import { ProfilePage } from "./pages/ProfilePage";
 import { AuthPage } from "./pages/AuthPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { PostPage } from "./pages/PostPage"; // <-- new import, confirm this exists
+import { PostPage } from "./pages/PostPage";
 
 function App() {
   return (

@@ -29,7 +29,7 @@ const createReply = asyncHander(async (req: Request, res: Response) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, reply, "Reply created successfully"));
+    .json(new ApiResponse(201, { reply }, "Reply created successfully"));
 });
 
 const getReplies = asyncHander(async (req: Request, res: Response) => {

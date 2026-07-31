@@ -24,7 +24,7 @@ export function getReplies(postId: string) {
 }
 
 export function createReply(postId: string, content: string) {
-  return post<{ reply: Post }>(`/posts/${postId}/replies`, { content });
+  return post<{ reply: Post }>(`/posts/${postId}`, { content });
 }
 
 export function getAllPosts(page = 1) {

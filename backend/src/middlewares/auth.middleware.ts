@@ -49,6 +49,7 @@ export const verifyJWT = asyncHander(
       next();
     } catch (error) {
       throw new ApiError(401, "Invalid access token");
+      next();
     }
   },
 );

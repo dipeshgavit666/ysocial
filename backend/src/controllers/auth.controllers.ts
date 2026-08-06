@@ -123,7 +123,7 @@ const login = asyncHander(async (req, res) => {
   const isPasswordCorrect: boolean = await user.isPasswordCorrect(password);
 
   if (!isPasswordCorrect) {
-    throw new ApiError(400, "Invalid credentials");
+    throw new ApiError(400, "Invalid Password");
   }
 
   const { accessToken, refreshToken } =

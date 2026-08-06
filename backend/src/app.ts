@@ -1,4 +1,5 @@
-import express, { type Application } from "express";
+import express from "express";
+import type {Application, Error, Request, Response, NextFunction} from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -29,6 +30,13 @@ app.use("/api/v1/auth", authRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Y Social");
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
+  res.status(500).json({
+    success: false,
+    message: "Sorry something is wrong with our server!"
+  });
 });
 
 export default app;

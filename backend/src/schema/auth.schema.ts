@@ -25,3 +25,5 @@ export const loginUserSchema = z.object({
     .min(6, "Password must be at least 6 characters")
     .max(50, "Password must be less than 50 characters"),
 });
+
+export type LoginUserSchema = z.infer<typeof loginUserSchema>;

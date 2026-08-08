@@ -6,6 +6,7 @@ import type { Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
 import { registerUserSchema } from "../schema/auth.schema";
+import { loginUserSchema } from "../schema/auth.schema";
 
 declare global {
   namespace Express {
@@ -104,25 +105,20 @@ const registerUser = asyncHander(async (req, res) => {
 });
 
 const login = asyncHander(async (req, res) => {
-  const { email, password } = req.body as {
-    email: string;
-    password: string;
-  };
+  const result = loginUserSchema.safeParse(req.body);
 
-  if (!email) {
-    throw new ApiError(400, "Email is required");
+  if (!result.success) {
+    throw new ApiError(400, "Invalid login data", result.error.issues);
   }
 
-  if (!password) {
-    throw new ApiError(400, "Password is required");
-  }
+  const { email, password } = result.data;
 
   const user = (await User.findOne({
-    email: email.toLowerCase().trim(),
+    email,
   }).select("+password")) as any;
 
   if (!user) {
-    throw new ApiError(400, "user does not exist");
+    throw new ApiError(400, "invalid Email or password");
   }
 
   const isPasswordCorrect: boolean = await user.isPasswordCorrect(password);

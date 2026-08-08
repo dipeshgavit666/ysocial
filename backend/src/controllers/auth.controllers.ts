@@ -5,6 +5,8 @@ import { ApiError } from "../utils/api-error";
 import type { Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
+import { registerUserSchema } from "../schema/auth.schema";
+
 declare global {
   namespace Express {
     interface Request {
@@ -38,17 +40,20 @@ const generateAccessTokenAndRefreshToken = async (userId: string) => {
 };
 
 const registerUser = asyncHander(async (req, res) => {
-  const { name, username, email, password } = req.body as {
-    name: string;
-    username: string;
-    email: string;
-    password: string;
-  };
+  const result = registerUserSchema.safeParse(req.body);
 
-  const normalizedEmail = email.toLowerCase().trim();
+  if (!result.success) {
+    throw new ApiError(
+      400,
+      "Invalid registration input data",
+      result.error.issues,
+    );
+  }
+
+  const { name, username, email, password } = result.data;
 
   const existedUser = await User.findOne({
-    $or: [{ username }, { email: normalizedEmail }],
+    $or: [{ username }, { email }],
   });
 
   if (existedUser) {
@@ -61,7 +66,7 @@ const registerUser = asyncHander(async (req, res) => {
 
   const user = await User.create({
     name,
-    email: normalizedEmail,
+    email,
     username,
     password,
   });

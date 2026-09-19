@@ -1,4 +1,4 @@
-import { connectDB } from "./src/db/db";
+import { connectDB } from "./src/config/db";
 import { runPostCleanup } from "./src/jobs/postCleanup.job";
 import mongoose from "mongoose";
 

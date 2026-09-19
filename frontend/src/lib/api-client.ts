@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => response.data.data,
   (error) => {
     const message = error.response?.data?.message;
 

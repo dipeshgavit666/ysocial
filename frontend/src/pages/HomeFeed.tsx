@@ -85,7 +85,7 @@ export function HomeFeed() {
 
   return (
     <div className="bg-neutral-950 text-neutral-50 min-h-screen space-y-4 p-5">
-      <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4 w-full rounded-lg border border-neutral-900">
+      <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4 w-full">
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         {user && (
@@ -115,10 +115,7 @@ export function HomeFeed() {
           <div className="text-neutral-400">No posts yet.</div>
         ) : (
           posts.map((post) => (
-            <div
-              key={post._id}
-              className="border border-neutral-700 rounded-lg p-4 text-neutral-50"
-            >
+            <div key={post._id} className="p-4 text-neutral-50">
               <Link
                 to={`/post/${post._id}`}
                 className="block border border-neutral-700 rounded-lg p-4 text-neutral-50 hover:border-neutral-500"

@@ -1,5 +1,5 @@
 import app from "./src/app";
-import { connectDB } from "./src/db/db";
+import { connectDB } from "./src/config/db.ts";
 import { startPostCleamupJob } from "./src/jobs/postCleanup.job.ts";
 
 const port = process.env.PORT || 3000;

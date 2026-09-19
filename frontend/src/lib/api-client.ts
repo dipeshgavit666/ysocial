@@ -6,9 +6,9 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.response.use(
-  (response) => response.data.data,
+  (response) => response.data,
   (error) => {
-    const message = error.response?.data?.message || "Something went wrong";
+    const message = error.response?.data?.message;
 
     return Promise.reject(new Error(message));
   },

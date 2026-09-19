@@ -7,6 +7,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 
 import { registerUserSchema } from "../schema/auth.schema";
 import { loginUserSchema } from "../schema/auth.schema";
+import { ENV } from "../config/env";
 
 declare global {
   namespace Express {
@@ -85,8 +86,8 @@ const registerUser = asyncHander(async (req, res) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+    secure: ENV.NODE_ENV === "production",
+    sameSite: (ENV.NODE_ENV === "production" ? "none" : "lax") as
       | "none"
       | "lax",
   };
@@ -136,8 +137,8 @@ const login = asyncHander(async (req, res) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+    secure: ENV.NODE_ENV === "production",
+    sameSite: (ENV.NODE_ENV === "production" ? "none" : "lax") as
       | "none"
       | "lax",
   };
@@ -164,8 +165,8 @@ const logoutUser = asyncHander(async (req: Request, res: Response) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+    secure: ENV.NODE_ENV === "production",
+    sameSite: (ENV.NODE_ENV === "production" ? "none" : "lax") as
       | "none"
       | "lax",
   };
@@ -194,7 +195,7 @@ const refreshAccessToken = asyncHander(async (req: Request, res: Response) => {
   try {
     const decodedToken = jwt.verify(
       incommingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET as string,
+      ENV.REFRESH_TOKEN_SECRET as string,
     ) as JwtPayload;
 
     const user = await User.findById(decodedToken?._id);
@@ -205,8 +206,8 @@ const refreshAccessToken = asyncHander(async (req: Request, res: Response) => {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      secure: ENV.NODE_ENV === "production",
+      sameSite: (ENV.NODE_ENV === "production" ? "none" : "lax") as
         | "none"
         | "lax",
     };

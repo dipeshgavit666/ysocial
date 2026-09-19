@@ -4,6 +4,7 @@ import { asyncHander } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { User } from "../models/user.models";
+import { ENV } from "../config/env";
 
 declare global {
   namespace Express {
@@ -29,7 +30,7 @@ export const verifyJWT = asyncHander(
     try {
       const decodedToken = jwt.verify(
         token,
-        process.env.ACCESS_TOKEN_SECRET as string,
+        ENV.ACCESS_TOKEN_SECRET as string,
       ) as JwtPayload;
       const user = await User.findById(decodedToken?._id).select(
         "-password -refreshToken",

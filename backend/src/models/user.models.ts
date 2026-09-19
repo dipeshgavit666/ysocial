@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
 import jwt, { type Secret } from "jsonwebtoken";
+import { ENV } from "../config/env";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -110,10 +111,9 @@ userSchema.methods.generateAccessToken = function () {
       email: this.email,
       username: this.username,
     },
-    process.env.ACCESS_TOKEN_SECRET as Secret,
+    ENV.ACCESS_TOKEN_SECRET as Secret,
     {
-      expiresIn: process.env
-        .ACCESS_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
+      expiresIn: ENV.ACCESS_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
     },
   );
 };
@@ -123,10 +123,9 @@ userSchema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SECRET as Secret,
+    ENV.REFRESH_TOKEN_SECRET as Secret,
     {
-      expiresIn: process.env
-        .REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
+      expiresIn: ENV.REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
     },
   );
 };

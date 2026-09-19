@@ -1,31 +1,32 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
 export type NotificationType =
-  | "conection_request"
-  | "connection_accepted"
+  | "follow_request"
+  | "follow_accept"
   | "post_like"
-  | "post_reply"
+  | "post_comment"
   | "mention";
 
 export interface INotification extends Document {
   _id: Types.ObjectId;
-  recipient: Types.ObjectId;
-  actor: Types.ObjectId;
+  from: Types.ObjectId;
+  to: Types.ObjectId;
   type: NotificationType;
   post?: Types.ObjectId; //relavent post
-  connections: Types.ObjectId; //relavent  connections
+  comment?: Types.ObjectId; //relavent comment
+  follower: Types.ObjectId; //relavent  follower
   isRead: boolean;
   createdAt: Date;
 }
 
 const notificationSchema = new Schema<INotification>(
   {
-    recipient: {
+    from: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    actor: {
+    to: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -33,18 +34,24 @@ const notificationSchema = new Schema<INotification>(
     type: {
       type: String,
       enum: [
-        "conection_request",
-        "connection_accepted",
+        "follow_request",
+        "follow_accept",
         "post_like",
-        "post_reply",
+        "post_comment",
         "mention",
       ] satisfies NotificationType[],
     },
     post: {
       type: Schema.Types.ObjectId,
       ref: "Post",
+      default: null,
     },
-    connections: {
+    comment: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+    },
+    follower: {
       type: Schema.Types.ObjectId,
       ref: "Connections",
     },

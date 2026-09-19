@@ -5,10 +5,12 @@ import { ENV } from "../config/env";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
+  clerkId: string;
   username: string;
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  lastName?: string;
   bio?: string;
   avatarUrl?: string;
   website?: string;
@@ -16,13 +18,20 @@ export interface IUser extends Document {
   isPrivate: boolean;
   posts: Types.ObjectId;
   postCount: number;
-  connectionsCount: number;
+  followers: Types.ObjectId[];
+  following: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(
   {
+    clerkId: {
+      type: String,
+      required: [true, "clerkId is required"],
+      unique: true,
+    },
+
     username: {
       type: String,
       required: [true, "username is required"],
@@ -50,17 +59,26 @@ const userSchema = new Schema<IUser>(
       minlength: [6, "password must be atleast 6 characters"],
       select: false,
     },
-    name: {
+    firstName: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "First name is required"],
       trim: true,
-      maxlength: [50, "Name cannot exceed 50 characters"],
+      maxlength: [50, "First name cannot exceed 50 characters"],
+    },
+    lastName: {
+      type: String,
+      trim: true,
+      maxlength: [50, "Last name cannot exceed 50 characters"],
     },
     bio: {
       type: String,
-      maxlength: [300, "Bio cannot exceed 300 characters"],
+      default: "",
+      maxlength: [200, "Bio cannot exceed 300 characters"],
     },
-    avatarUrl: String,
+    avatarUrl: {
+      type: String,
+      default: "",
+    },
     website: {
       type: String,
       maxlength: [200, "website length cannot exceed 200 characters"],
@@ -82,10 +100,15 @@ const userSchema = new Schema<IUser>(
       default: 0,
       min: 0,
     },
-    connectionsCount: {
-      type: Number,
-      default: 0,
-      min: 0,
+    followers: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    following: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
     },
   },
   {

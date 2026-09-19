@@ -6,10 +6,17 @@ export interface IPost extends Document {
   _id: Types.ObjectId;
   author: Types.ObjectId;
   content: String;
+  imageUrl?: string;
   visibility: postVisibility;
   replyTo?: Types.ObjectId;
+  likes: Types.ObjectId[];
   likeCount: number;
-  replyCount: number;
+  comments: Types.ObjectId[];
+  commentCount: number;
+  shares: Types.ObjectId[];
+  shareCount: number;
+  views: Types.ObjectId[];
+  viewCount: number;
   isEdited: boolean;
   isPinned: boolean;
   hashtags: string[];
@@ -31,6 +38,10 @@ const postSchema = new Schema<IPost>(
       required: true,
       maxlength: [3000, "Post content cannot exceed 3000 characters"],
     },
+    imageUrl: {
+      type: String,
+      default: "",
+    },
     visibility: {
       type: String,
       emun: ["public", "connections", "private"] satisfies postVisibility[],
@@ -41,12 +52,42 @@ const postSchema = new Schema<IPost>(
       ref: "Post",
       default: null,
     },
+    likes: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
     likeCount: {
       type: Number,
       default: 0,
       min: 0,
     },
-    replyCount: {
+    comments: {
+      type: [Schema.Types.ObjectId],
+      ref: "Post",
+      default: [],
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    shares: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    shareCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    views: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    viewCount: {
       type: Number,
       default: 0,
       min: 0,

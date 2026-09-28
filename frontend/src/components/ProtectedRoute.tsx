@@ -1,14 +1,14 @@
+import { useAuth } from "@clerk/react";
 import { Navigate, Outlet } from "react-router";
-import { useAuth } from "../context/useAuth";
 
 export function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
 
-  if (isLoading) {
+  if (!isLoaded) {
     return <div>Loading...</div>;
   }
 
-  if (!user) {
+  if (!isSignedIn) {
     return <Navigate to="/auth" replace />;
   }
 

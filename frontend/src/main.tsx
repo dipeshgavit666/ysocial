@@ -3,14 +3,18 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router";
-import { AuthProvider } from "./context/AuthProvider.tsx";
+import { ClerkProvider } from "@clerk/react";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <StrictMode>
-      <AuthProvider>
+      <ClerkProvider
+        publishableKey={
+          "pk_test_dG91Y2hlZC1zaGVwaGVyZC05MDc5LmNsZXJrLmFjY291bnRzLmRldiQ"
+        }
+      >
         <App />
-      </AuthProvider>
+      </ClerkProvider>
     </StrictMode>
   </BrowserRouter>,
 );

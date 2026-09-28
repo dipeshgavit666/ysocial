@@ -19,15 +19,15 @@ app.use(
 );
 
 // import routes
-import healthCheckRouter from "./routes/healthcheck.routes.js";
+import healthCheckRouter from "./routes/healthcheck.routes.ts";
 import postRouter from "./routes/post.routes.ts";
-import authRouter from "./routes/auth.routes.ts";
+import userRouter from "./routes/user.routes.ts";
 import { ENV } from "./config/env.ts";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 
 app.use("/api/v1/posts", postRouter);
-app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/user", userRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Y Social");

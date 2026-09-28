@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import { getSinglePost, getReplies, createReply } from "../api/post.api";
 import type { Post } from "../api/post.api";
-import { useAuth } from "../context/useAuth";
-
+import { useUser } from "@clerk/react";
 export function PostPage() {
   const { postId } = useParams<{ postId: string }>();
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Post[]>([]);

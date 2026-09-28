@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getAllPosts, createPost, toggleLike } from "../api/post.api";
 import type { Post } from "../api/post.api";
-import { useAuth } from "../context/useAuth";
+import { useUser } from "@clerk/react";
 import { Link } from "react-router";
 
 export function HomeFeed() {
@@ -10,7 +10,7 @@ export function HomeFeed() {
   const [error, setError] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
 

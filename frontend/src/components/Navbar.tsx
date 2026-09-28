@@ -1,47 +1,48 @@
 import { Link } from "react-router";
-import { useAuth } from "../context/useAuth";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 export function Navbar() {
-  const { user, isLoading, logout } = useAuth();
-
   return (
     <nav className="bg-neutral-900 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="text-white font-bold text-xl">Y Social</div>
-        <div>
+      <div className="container mx-auto flex items-center justify-between">
+        <Link to="/" className="text-xl font-bold text-white">
+          Y Social
+        </Link>
+
+        <div className="flex items-center gap-2">
           <Link
             to="/"
-            className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+            className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
           >
             Home
           </Link>
-          <Link
-            to="/profile"
-            className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-          >
-            Profile
-          </Link>
 
-          {isLoading ? null : user ? (
-            <>
-              <span className="text-gray-300 px-3 py-2 rounded-md text-sm font-medium">
-                {user.username}
-              </span>
-              <button
-                onClick={logout}
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Log Out
-              </button>
-            </>
-          ) : (
+          <Show when="signed-in">
             <Link
-              to="/auth"
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              to="/profile"
+              className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white"
             >
-              Log In
+              Profile
             </Link>
-          )}
+
+            <div className="ml-2">
+              <UserButton />
+            </div>
+          </Show>
+
+          <Show when="signed-out">
+            <SignInButton>
+              <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white">
+                Log In
+              </button>
+            </SignInButton>
+
+            <SignUpButton>
+              <button className="rounded-md bg-white px-3 py-2 text-sm font-medium text-black hover:bg-gray-200">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </Show>
         </div>
       </div>
     </nav>

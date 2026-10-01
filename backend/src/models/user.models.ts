@@ -12,7 +12,7 @@ export interface IUser extends Document {
   firstName: string;
   lastName?: string;
   bio?: string;
-  avatarUrl?: string;
+  profileImage?: string;
   website?: string;
   isVerified: boolean;
   isPrivate: boolean;
@@ -75,7 +75,7 @@ const userSchema = new Schema<IUser>(
       default: "",
       maxlength: [200, "Bio cannot exceed 300 characters"],
     },
-    avatarUrl: {
+    profileImage: {
       type: String,
       default: "",
     },

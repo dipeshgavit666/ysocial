@@ -1,22 +1,17 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-export type postVisibility = "public" | "followers" | "private";
-
 export interface IPost extends Document {
   _id: Types.ObjectId;
   author: Types.ObjectId;
-  content: String;
+  content: string;
   imageUrl?: string;
-  visibility: postVisibility;
-  replyTo?: Types.ObjectId;
+  replyTo?: Types.ObjectId | null;
   likes: Types.ObjectId[];
   likeCount: number;
   comments: Types.ObjectId[];
   commentCount: number;
   shares: Types.ObjectId[];
   shareCount: number;
-  views: Types.ObjectId[];
-  viewCount: number;
   isEdited: boolean;
   isPinned: boolean;
   hashtags: string[];
@@ -41,11 +36,6 @@ const postSchema = new Schema<IPost>(
     imageUrl: {
       type: String,
       default: "",
-    },
-    visibility: {
-      type: String,
-      emun: ["public", "followers", "private"] satisfies postVisibility[],
-      default: "public",
     },
     replyTo: {
       type: Schema.Types.ObjectId,
@@ -82,23 +72,13 @@ const postSchema = new Schema<IPost>(
       default: 0,
       min: 0,
     },
-    views: {
-      type: [Schema.Types.ObjectId],
-      ref: "User",
-      default: [],
-    },
-    viewCount: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
     isEdited: {
       type: Boolean,
-      defaulr: false,
+      default: false,
     },
     isPinned: {
       type: Boolean,
-      defalt: false,
+      default: false,
     },
     hashtags: {
       type: [String],
@@ -117,8 +97,8 @@ const postSchema = new Schema<IPost>(
   { timestamps: true },
 );
 
+postSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
 postSchema.index({ author: 1, createdAt: -1 });
-postSchema.index({ visibility: 1, createdAt: -1 });
 postSchema.index({ replyTo: 1, createdAt: 1 });
 postSchema.index({ hashtags: 1, createdAt: -1 });
 postSchema.index({ content: "text" });

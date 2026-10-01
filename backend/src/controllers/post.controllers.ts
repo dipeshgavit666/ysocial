@@ -1,9 +1,10 @@
-import { Post } from "../models/post.models";
+import { Post, type IPost } from "../models/post.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
+import type { QueryFilter } from "mongoose";
 
 declare global {
   namespace Express {
@@ -84,14 +85,18 @@ const getPosts = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
   const skip = (page - 1) * limit;
 
-  const filter = { visibility: "public", replyTo: null };
+  const filter: QueryFilter<IPost> = {
+    replyTo: null,
+    $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
+  };
 
   const [posts, total] = await Promise.all([
     Post.find(filter)
+      .select("-likes -shares -comments")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("author", "username firstName lastName profilePicture")
+      .populate("author", "username firstName lastName profileImage")
       .lean(),
     Post.countDocuments(filter),
   ]);

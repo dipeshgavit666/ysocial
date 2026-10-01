@@ -13,10 +13,13 @@ import { protectRoute } from "../middlewares/auth.middleware";
 const router = Router();
 
 // public route
-router.route("/").post(protectRoute, createPost);
+
 router.route("/").get(getPosts);
-router.route("/user/:userId").get(getUserPosts);
 router.route("/:postId").get(getSinglePost);
+router.route("/user/:username").get(getUserPosts);
+
+// protected route
+router.route("/").post(protectRoute, createPost);
 router.route("/:postId").delete(protectRoute, deletePost);
 router.route("/:postId").put(protectRoute, updatePost);
 

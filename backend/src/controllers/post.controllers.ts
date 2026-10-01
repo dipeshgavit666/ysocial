@@ -1,4 +1,5 @@
 import { Post, type IPost } from "../models/post.models";
+import { User } from "../models/user.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
@@ -117,36 +118,71 @@ const getPosts = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getSinglePost = asyncHandler(async (req: Request, res: Response) => {
-  const singlePost = await Post.findById(req.params.postId).populate(
-    "author",
-    "username",
-  );
+  const { postId } = req.params;
 
-  if (!singlePost) {
+  const post = await Post.findById(postId)
+    .populate("user", "username firstName lastName profileImage")
+    .populate({
+      path: "comments",
+      populate: {
+        path: "user",
+        select: "username firstName lastName profileImage",
+      },
+    });
+
+  if (!post) {
     throw new ApiError(404, "Post not found");
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { singlePost }, "Post fetched successfully"));
+    .json(new ApiResponse(200, { post }, "Post fetched successfully"));
 });
 
 const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  const { username } = req.params;
 
-  const userPosts = await Post.find({
-    author: userId,
-  })
-    .populate("author", "username")
-    .sort({ createdAt: -1 });
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+  const skip = (page - 1) * limit;
 
-  if (!userPosts) {
-    throw new ApiError(500, "Failed to fetch posts");
+  const user = await User.findOne({ username }).select(
+    "_id username firstName lastName profileImage",
+  );
+  if (!user) {
+    throw new ApiError(404, "User not found");
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { userPosts }, "Posts fetched successfully"));
+  const filter: QueryFilter<IPost> = {
+    author: user._id,
+    replyTo: null,
+    $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
+  };
+
+  const [posts, total] = await Promise.all([
+    Post.find(filter)
+      .select("-likes -shares -comments")
+      .sort({ isPinned: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Post.countDocuments(filter),
+  ]);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user,
+        posts,
+        page,
+        limit,
+        total,
+        hasMore: skip + posts.length < total,
+      },
+      "User posts fetched successfully",
+    ),
+  );
 });
 
 export {

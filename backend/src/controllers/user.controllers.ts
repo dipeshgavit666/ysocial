@@ -4,6 +4,7 @@ import { asyncHander } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
 import type { Request, Response } from "express";
 import { clerkClient, getAuth } from "@clerk/express";
+import { Notification } from "../models/notification.models";
 
 const syncUser = asyncHander(async (req, res) => {
   const { userId } = getAuth(req);
@@ -127,6 +128,14 @@ const followUser = asyncHander(async (req: Request, res: Response) => {
     });
     await User.findByIdAndUpdate(targetUser._id, {
       $push: { followers: currentUser._id },
+    });
+
+    // send notification to target user
+    await Notification.create({
+      from: currentUser._id,
+      to: targetUser._id,
+      type: "follow_request",
+      follower: currentUser._id,
     });
 
     return res

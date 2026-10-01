@@ -90,6 +90,55 @@ const followUser = asyncHander(async (req: Request, res: Response) => {
   if (userId === targetUserId) {
     throw new ApiError(400, "you cannot follow yourself");
   }
+
+  const currentUser = await User.findOne({ clerkId: userId });
+  const targetUser = await User.findById({ clerkId: targetUserId });
+
+  if (!currentUser || !targetUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isFollowing = currentUser.following.some(
+    (f) => f.toString() === targetUserId,
+  );
+
+  if (isFollowing) {
+    //unfollow user
+    await User.findByIdAndUpdate(currentUser._id, {
+      $pull: { following: targetUserId },
+    });
+    await User.findByIdAndUpdate(targetUser._id, {
+      $pull: { followers: currentUser._id },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { currentUser, targetUser },
+          "Successfully unfollowed the user",
+        ),
+      );
+  } else {
+    //follow user
+    await User.findByIdAndUpdate(currentUser._id, {
+      $push: { following: targetUserId },
+    });
+    await User.findByIdAndUpdate(targetUser._id, {
+      $push: { followers: currentUser._id },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { currentUser, targetUser },
+          "Successfully followed the user",
+        ),
+      );
+  }
 });
 const logoutUser = asyncHander(async (req: Request, res: Response) => {});
 

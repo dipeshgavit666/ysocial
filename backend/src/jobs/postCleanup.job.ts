@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { Post } from "../models/post.models";
-import { Like } from "../models/like.models";
+// import { Like } from "../models/like.models";
 
 export const runPostCleanup = async () => {
   try {
@@ -22,7 +22,7 @@ export const runPostCleanup = async () => {
 
     const allPostIds = [...expiredPostIds, ...replyIds];
 
-    await Like.deleteMany({ post: { $in: allPostIds } });
+    // await Like.deleteMany({ post: { $in: allPostIds } });
     await Post.deleteMany({ _id: { $in: allPostIds } });
 
     console.log(`[POST CLEANUP] Deleted ${allPostIds.length} posts/replies`);

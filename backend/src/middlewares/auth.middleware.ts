@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { asyncHander } from "../utils/async-handler";
+import { asyncHandler } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
 import { getAuth } from "@clerk/express";
 
@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-export const protectRoute = asyncHander(
+export const protectRoute = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { isAuthenticated } = getAuth(req);
     if (!isAuthenticated) {

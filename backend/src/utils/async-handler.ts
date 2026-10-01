@@ -5,7 +5,7 @@ import {
   type RequestHandler,
 } from "express";
 
-export const asyncHander = (requestHandler: RequestHandler) => {
+export const asyncHandler = (requestHandler: RequestHandler) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
   };

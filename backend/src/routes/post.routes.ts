@@ -4,7 +4,7 @@ import {
   deletePost,
   getSinglePost,
   getUserPosts,
-  getAllPosts,
+  getPosts,
   updatePost,
 } from "../controllers/post.controllers";
 import { createReply, getReplies } from "../controllers/reply.controllers";
@@ -12,8 +12,9 @@ import { protectRoute } from "../middlewares/auth.middleware";
 
 const router = Router();
 
+// public route
 router.route("/").post(protectRoute, createPost);
-router.route("/").get(getAllPosts);
+router.route("/").get(getPosts);
 router.route("/user/:userId").get(getUserPosts);
 router.route("/:postId").get(getSinglePost);
 router.route("/:postId").delete(protectRoute, deletePost);

@@ -1,7 +1,7 @@
 import { Post } from "../models/post.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
-import { asyncHander } from "../utils/async-handler";
+import { asyncHandler } from "../utils/async-handler";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 
@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const createPost = asyncHander(async (req: Request, res: Response) => {
+const createPost = asyncHandler(async (req: Request, res: Response) => {
   const { content } = req.body as {
     content: string;
   };
@@ -42,7 +42,7 @@ const createPost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(201, { post: post }, "Post created successfully"));
 });
 
-const updatePost = asyncHander(async (req: Request, res: Response) => {
+const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const post = await Post.findById(req.params.postId);
 
   if (!post) {
@@ -61,7 +61,7 @@ const updatePost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, { post }, "Post updated successfully"));
 });
 
-const deletePost = asyncHander(async (req: Request, res: Response) => {
+const deletePost = asyncHandler(async (req: Request, res: Response) => {
   const post = await Post.findById(req.params.postId);
 
   if (!post) {
@@ -79,35 +79,39 @@ const deletePost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, {}, "Post was deleted successfully"));
 });
 
-const getAllPosts = asyncHander(async (req: Request, res: Response) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Math.min(Number(req.query.limit) || 10, 500);
-
+const getPosts = asyncHandler(async (req: Request, res: Response) => {
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
   const skip = (page - 1) * limit;
 
-  const posts = await Post.find({
-    visibility: "public",
-    replyTo: null,
-  })
-    .populate("author", "username")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  const filter = { visibility: "public", replyTo: null };
+
+  const [posts, total] = await Promise.all([
+    Post.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("author", "username firstName lastName profilePicture")
+      .lean(),
+    Post.countDocuments(filter),
+  ]);
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
+        posts,
         page,
         limit,
-        posts,
+        total,
+        hasMore: skip + posts.length < total,
       },
-      "Post fetched successfully",
+      "Posts fetched successfully",
     ),
   );
 });
 
-const getSinglePost = asyncHander(async (req: Request, res: Response) => {
+const getSinglePost = asyncHandler(async (req: Request, res: Response) => {
   const singlePost = await Post.findById(req.params.postId).populate(
     "author",
     "username",
@@ -122,7 +126,7 @@ const getSinglePost = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, { singlePost }, "Post fetched successfully"));
 });
 
-const getUserPosts = asyncHander(async (req: Request, res: Response) => {
+const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   const userPosts = await Post.find({
@@ -145,6 +149,6 @@ export {
   deletePost,
   getSinglePost,
   getUserPosts,
-  getAllPosts,
+  getPosts,
   updatePost,
 };

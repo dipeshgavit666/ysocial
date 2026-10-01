@@ -1,12 +1,12 @@
 import { User } from "../models/user.models";
 import { ApiResponse } from "../utils/api-response";
-import { asyncHander } from "../utils/async-handler";
+import { asyncHandler } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
 import type { Request, Response } from "express";
 import { clerkClient, getAuth } from "@clerk/express";
 import { Notification } from "../models/notification.models";
 
-const syncUser = asyncHander(async (req, res) => {
+const syncUser = asyncHandler(async (req, res) => {
   const { userId } = getAuth(req);
   if (!userId) {
     throw new ApiError(401, "something went wrong");
@@ -43,7 +43,7 @@ const syncUser = asyncHander(async (req, res) => {
     .json(new ApiResponse(201, { user }, "user registered successfully"));
 });
 
-const getUserProfile = asyncHander(async (req: Request, res: Response) => {
+const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
   const { username } = req.params;
   const user = await User.findOne({ username });
   if (!user) {
@@ -53,7 +53,7 @@ const getUserProfile = asyncHander(async (req: Request, res: Response) => {
   return res.status(200).json(new ApiResponse(200, { user }, "user found"));
 });
 
-const updateUser = asyncHander(async (req: Request, res: Response) => {
+const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   const user = await User.findByIdAndUpdate({ clerkId: userId }, req.body, {
     new: true,
@@ -68,7 +68,7 @@ const updateUser = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, { user }, "user profile updated successfully"));
 });
 
-const getCurrentUser = asyncHander(async (req: Request, res: Response) => {
+const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   const user = await User.findById({ clerkId: userId });
   if (!user) {
@@ -79,7 +79,7 @@ const getCurrentUser = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, { user }, "fetched current user succesfully"));
 });
 
-const followUser = asyncHander(async (req: Request, res: Response) => {
+const followUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   if (!userId) {
     throw new ApiError(401, "Unauthenticated");
@@ -151,10 +151,10 @@ const followUser = asyncHander(async (req: Request, res: Response) => {
       );
   }
 });
-const logoutUser = asyncHander(async (req: Request, res: Response) => {});
+const logoutUser = asyncHandler(async (req: Request, res: Response) => {});
 
 //delete all user data
-const deleteUser = asyncHander(async (req: Request, res: Response) => {});
+const deleteUser = asyncHandler(async (req: Request, res: Response) => {});
 
 export {
   syncUser,

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-export type postVisibility = "public" | "connections" | "private";
+export type postVisibility = "public" | "followers" | "private";
 
 export interface IPost extends Document {
   _id: Types.ObjectId;
@@ -44,7 +44,7 @@ const postSchema = new Schema<IPost>(
     },
     visibility: {
       type: String,
-      emun: ["public", "connections", "private"] satisfies postVisibility[],
+      emun: ["public", "followers", "private"] satisfies postVisibility[],
       default: "public",
     },
     replyTo: {

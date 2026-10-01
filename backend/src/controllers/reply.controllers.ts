@@ -1,10 +1,10 @@
 import { Post } from "../models/post.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
-import { asyncHander } from "../utils/async-handler";
+import { asyncHandler } from "../utils/async-handler";
 import type { Request, Response } from "express";
 
-const createReply = asyncHander(async (req: Request, res: Response) => {
+const createReply = asyncHandler(async (req: Request, res: Response) => {
   const replyTo = await Post.findById(req.params.postId);
 
   if (!replyTo) {
@@ -32,7 +32,7 @@ const createReply = asyncHander(async (req: Request, res: Response) => {
     .json(new ApiResponse(201, { reply }, "Reply created successfully"));
 });
 
-const getReplies = asyncHander(async (req: Request, res: Response) => {
+const getReplies = asyncHandler(async (req: Request, res: Response) => {
   const replies = await Post.find({
     replyTo: req.params.postId,
   })

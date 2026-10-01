@@ -25,12 +25,14 @@ const syncUser = asyncHander(async (req, res) => {
     throw new ApiError(400, "Clerk user has no email address", []);
   }
 
+  const base = email.split("@")[0];
+
   const userData = {
     clerkId: userId,
     email,
     firstName: clerkUser.firstName ?? "",
     lastName: clerkUser.lastName ?? "",
-    username: email.split("@")[0],
+    username: clerkUser.username ?? `${base}_${userId.slice(-6)}`,
     getUserProfile: clerkUser.imageUrl ?? "",
   };
 

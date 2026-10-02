@@ -18,7 +18,7 @@ export const protectRoute = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { isAuthenticated } = getAuth(req);
     if (!isAuthenticated) {
-      throw new ApiError(401, "Unauthorized - you must be logged in");
+      throw new ApiError(401, "Unuserized - you must be logged in");
     }
 
     next();

@@ -4,11 +4,12 @@ import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
 import type { Request, Response } from "express";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import type { QueryFilter } from "mongoose";
 import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary";
 import type { UploadApiResponse } from "cloudinary";
+import { Notification } from "../models/notification.models";
 
 declare global {
   namespace Express {
@@ -47,7 +48,7 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
 
   const createPost = asyncHandler(async (req: Request, res: Response) => {
     const { userId: clerkId } = getAuth(req);
-    if (!clerkId) throw new ApiError(401, "Unauthorized");
+    if (!clerkId) throw new ApiError(401, "Unuserized");
 
     const content = String(req.body.content ?? "").trim();
     const imageFile = req.file;
@@ -74,7 +75,7 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const post = await Post.create({
-      author: user._id,
+      user: user._id,
       content,
       imageUrl,
       expiredAt: new Date(Date.now() + POST_TTL_MS),
@@ -86,6 +87,64 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const likePost = asyncHandler(async (req: Request, res: Response) => {
+  const { userId: clerkId } = getAuth(req);
+  if (!clerkId) throw new ApiError(401, "Unauthorized");
+
+  const postId = String(req.params.postId);
+  if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
+
+  const user = await User.findOne({ clerkId }).select("_id");
+  if (!user) throw new ApiError(404, "User not found");
+
+  // Try to like: only matches if the user hasn't liked yet
+  const likedPost = await Post.findOneAndUpdate(
+    { _id: postId, likes: { $ne: user._id } },
+    { $addToSet: { likes: user._id }, $inc: { likeCount: 1 } },
+    { new: true },
+  ).select("user likeCount");
+
+  if (likedPost) {
+    if (likedPost.user.toString() !== user._id.toString()) {
+      await Notification.create({
+        from: user._id,
+        to: likedPost.user,
+        type: "post_like",
+        post: postId,
+      });
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { liked: true, likeCount: likedPost.likeCount },
+          "Post liked successfully",
+        ),
+      );
+  }
+
+  // Otherwise try to unlike: only matches if the user has liked
+  const unlikedPost = await Post.findOneAndUpdate(
+    { _id: postId, likes: user._id },
+    { $pull: { likes: user._id }, $inc: { likeCount: -1 } },
+    { new: true },
+  ).select("likeCount");
+
+  if (!unlikedPost) throw new ApiError(404, "Post not found");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { liked: false, likeCount: unlikedPost.likeCount },
+        "Post unliked successfully",
+      ),
+    );
+});
+
 const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const post = await Post.findById(req.params.postId);
 
@@ -93,8 +152,8 @@ const updatePost = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.author.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, "Unauthorized");
+  if (post.user.toString() !== req.user?._id.toString()) {
+    throw new ApiError(403, "Unuserized");
   }
 
   post.content = req.body.cintent;
@@ -112,8 +171,8 @@ const deletePost = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.author.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, "Unauthorized");
+  if (post.user.toString() !== req.user?._id.toString()) {
+    throw new ApiError(403, "Unuserized");
   }
 
   await post.deleteOne();
@@ -139,7 +198,7 @@ const getPosts = asyncHandler(async (req: Request, res: Response) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("author", "username firstName lastName profileImage")
+      .populate("user", "username firstName lastName profileImage")
       .lean(),
     Post.countDocuments(filter),
   ]);
@@ -196,7 +255,7 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const filter: QueryFilter<IPost> = {
-    author: user._id,
+    user: user._id,
     replyTo: null,
     $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
   };
@@ -229,6 +288,7 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
 
 export {
   createPost,
+  likePost,
   deletePost,
   getSinglePost,
   getUserPosts,

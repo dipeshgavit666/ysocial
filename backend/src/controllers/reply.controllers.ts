@@ -16,7 +16,7 @@ const createReply = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const reply = await Post.create({
-    author: req.user!._id,
+    user: req.user!._id,
     content: req.body.content,
     replyTo: replyTo._id,
   });
@@ -36,7 +36,7 @@ const getReplies = asyncHandler(async (req: Request, res: Response) => {
   const replies = await Post.find({
     replyTo: req.params.postId,
   })
-    .populate("author", "username")
+    .populate("user", "username")
     .sort({
       createdAt: -1,
     });

@@ -3,7 +3,7 @@ import { get, post, patch } from "../lib/api-client";
 export interface Post {
   _id: string;
   content: string;
-  author: { _id: string; username: string };
+  user: { _id: string; username: string };
   likeCount: number;
   replyCount: number;
   createdAt: number;

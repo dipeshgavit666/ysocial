@@ -105,8 +105,8 @@ Create a `.env` file in `frontend/` (see [Configuration](#configuration) below).
 - `GET /api/v1/posts` — Fetch paginated public feed
 - `POST /api/v1/posts` — Create a post (expires in 24h) — requires auth
 - `GET /api/v1/posts/:postId` — Get a single post
-- `PUT /api/v1/posts/:postId` — Update a post's content — requires auth, author only
-- `DELETE /api/v1/posts/:postId` — Delete a post — requires auth, author only
+- `PUT /api/v1/posts/:postId` — Update a post's content — requires auth, user only
+- `DELETE /api/v1/posts/:postId` — Delete a post — requires auth, user only
 - `GET /api/v1/posts/user/:userId` — Fetch all posts by a specific user
 - `PATCH /api/v1/posts/:postId/like` — Toggle a like on a post — requires auth
 - `POST /api/v1/posts/:postId` — Reply to a post — requires auth

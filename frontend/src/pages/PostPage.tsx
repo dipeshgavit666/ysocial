@@ -59,7 +59,7 @@ export function PostPage() {
     <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4">
       <div className="border border-neutral-700 rounded-lg p-4">
         <div className="font-semibold text-neutral-50">
-          {post.author.username}
+          {post.user.username}
         </div>
         <div className="text-neutral-300">{post.content}</div>
         <div className="text-neutral-500 text-sm mt-2">
@@ -95,7 +95,7 @@ export function PostPage() {
             className="border border-neutral-700 rounded-lg p-4"
           >
             <div className="font-semibold text-neutral-50">
-              {reply.author.username}
+              {reply.user.username}
             </div>
             <div className="text-neutral-300">{reply.content}</div>
           </div>

@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IPost extends Document {
   _id: Types.ObjectId;
-  author: Types.ObjectId;
+  user: Types.ObjectId;
   content: string;
   imageUrl?: string;
   replyTo?: Types.ObjectId | null;
@@ -23,7 +23,7 @@ export interface IPost extends Document {
 
 const postSchema = new Schema<IPost>(
   {
-    author: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -98,7 +98,7 @@ const postSchema = new Schema<IPost>(
 );
 
 postSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
-postSchema.index({ author: 1, createdAt: -1 });
+postSchema.index({ user: 1, createdAt: -1 });
 postSchema.index({ replyTo: 1, createdAt: 1 });
 postSchema.index({ hashtags: 1, createdAt: -1 });
 postSchema.index({ content: "text" });

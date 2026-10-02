@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import type { QueryFilter } from "mongoose";
 import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary";
-import { UploadApiResponse } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
 
 declare global {
   namespace Express {

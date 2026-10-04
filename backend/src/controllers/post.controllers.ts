@@ -22,69 +22,68 @@ declare global {
   }
 }
 
+const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "ysocial_posts",
+        resource_type: "image",
+        transformation: [
+          { width: 800, height: 600, crop: "limit" },
+          { quality: "auto" },
+          { fetch_format: "auto" },
+        ],
+      },
+      (error, result) => {
+        if (error || !result)
+          return reject(error ?? new Error("Empty upload result"));
+        resolve(result);
+      },
+    );
+    uploadStream.end(buffer); // no need for PassThrough or require("stream")
+  });
+};
+
 const createPost = asyncHandler(async (req: Request, res: Response) => {
-  const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> =>
-    new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: "ysocial_posts",
-          resource_type: "image",
-          transformation: [
-            { width: 800, height: 600, crop: "limit" },
-            { quality: "auto" },
-            { fetch_format: "auto" },
-          ],
-        },
-        (error, result) => {
-          if (error || !result)
-            return reject(error ?? new Error("Empty upload result"));
-          resolve(result);
-        },
-      );
-      uploadStream.end(buffer); // no need for PassThrough or require("stream")
-    });
+  const { userId: clerkId } = getAuth(req);
+  if (!clerkId) throw new ApiError(401, "Unuserized");
+
+  const content = String(req.body.content ?? "").trim();
+  const imageFile = req.file;
+
+  if (!content && !imageFile) {
+    throw new ApiError(400, "Post must contain either content or an image");
+  }
+  if (content.length > 3000) {
+    throw new ApiError(400, "Post content cannot exceed 3000 characters");
+  }
+
+  const user = await User.findOne({ clerkId }).select("_id");
+  if (!user) throw new ApiError(404, "User not found");
+
+  let imageUrl: string | undefined;
+  if (imageFile) {
+    try {
+      const result = await uploadToCloudinary(imageFile.buffer);
+      imageUrl = result.secure_url;
+    } catch (error) {
+      console.error("Cloudinary upload error", error);
+      throw new ApiError(500, "Failed to upload image");
+    }
+  }
 
   const POST_TTL_MS = 24 * 60 * 60 * 1000;
 
-  const createPost = asyncHandler(async (req: Request, res: Response) => {
-    const { userId: clerkId } = getAuth(req);
-    if (!clerkId) throw new ApiError(401, "Unuserized");
-
-    const content = String(req.body.content ?? "").trim();
-    const imageFile = req.file;
-
-    if (!content && !imageFile) {
-      throw new ApiError(400, "Post must contain either content or an image");
-    }
-    if (content.length > 3000) {
-      throw new ApiError(400, "Post content cannot exceed 3000 characters");
-    }
-
-    const user = await User.findOne({ clerkId }).select("_id");
-    if (!user) throw new ApiError(404, "User not found");
-
-    let imageUrl: string | undefined;
-    if (imageFile) {
-      try {
-        const result = await uploadToCloudinary(imageFile.buffer);
-        imageUrl = result.secure_url;
-      } catch (error) {
-        console.error("Cloudinary upload error", error);
-        throw new ApiError(500, "Failed to upload image");
-      }
-    }
-
-    const post = await Post.create({
-      user: user._id,
-      content,
-      imageUrl,
-      expiredAt: new Date(Date.now() + POST_TTL_MS),
-    });
-
-    return res
-      .status(201)
-      .json(new ApiResponse(201, { post }, "Post created successfully"));
+  const post = await Post.create({
+    user: user._id,
+    content,
+    imageUrl,
+    expiredAt: new Date(Date.now() + POST_TTL_MS),
   });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, { post }, "Post created successfully"));
 });
 
 const likePost = asyncHandler(async (req: Request, res: Response) => {
@@ -146,17 +145,33 @@ const likePost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const updatePost = asyncHandler(async (req: Request, res: Response) => {
-  const post = await Post.findById(req.params.postId);
+  const { userId: clerkId } = getAuth(req);
+  if (!clerkId) throw new ApiError(401, "Unauthorized");
 
-  if (!post) {
-    throw new ApiError(404, "Post not found");
+  const postId = String(req.params.postId);
+  if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
+
+  const content = String(req.body.content ?? "").trim();
+  if (content.length > 3000) {
+    throw new ApiError(400, "Post content cannot exceed 3000 characters");
   }
 
-  if (post.user.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, "Unuserized");
+  const user = await User.findOne({ clerkId }).select("_id");
+  if (!user) throw new ApiError(404, "User not found");
+
+  const post = await Post.findById(postId);
+  if (!post) throw new ApiError(404, "Post not found");
+
+  if (post.user.toString() !== user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to edit this post");
   }
 
-  post.content = req.body.cintent;
+  // A post must keep either text or an image
+  if (!content && !post.imageUrl) {
+    throw new ApiError(400, "Post must contain either content or an image");
+  }
+
+  post.content = content;
   await post.save();
 
   return res
@@ -165,21 +180,27 @@ const updatePost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deletePost = asyncHandler(async (req: Request, res: Response) => {
-  const post = await Post.findById(req.params.postId);
+  const { userId: clerkId } = getAuth(req);
+  if (!clerkId) throw new ApiError(401, "Unauthorized");
 
-  if (!post) {
-    throw new ApiError(404, "Post not found");
-  }
+  const postId = String(req.params.postId);
+  if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
-  if (post.user.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, "Unuserized");
+  const user = await User.findOne({ clerkId }).select("_id");
+  if (!user) throw new ApiError(404, "User not found");
+
+  const post = await Post.findById(postId).select("user");
+  if (!post) throw new ApiError(404, "Post not found");
+
+  if (post.user.toString() !== user._id.toString()) {
+    throw new ApiError(403, "You are not allowed to delete this post");
   }
 
   await post.deleteOne();
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Post was deleted successfully"));
+    .json(new ApiResponse(200, {}, "Post deleted successfully"));
 });
 
 const getPosts = asyncHandler(async (req: Request, res: Response) => {

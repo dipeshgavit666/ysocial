@@ -5,10 +5,8 @@ export interface IPost extends Document {
   user: Types.ObjectId;
   content: string;
   imageUrl?: string;
-  replyTo?: Types.ObjectId | null;
   likes: Types.ObjectId[];
   likeCount: number;
-  comments: Types.ObjectId[];
   commentCount: number;
   shares: Types.ObjectId[];
   shareCount: number;
@@ -37,11 +35,6 @@ const postSchema = new Schema<IPost>(
       type: String,
       default: "",
     },
-    replyTo: {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-      default: null,
-    },
     likes: {
       type: [Schema.Types.ObjectId],
       ref: "User",
@@ -51,11 +44,6 @@ const postSchema = new Schema<IPost>(
       type: Number,
       default: 0,
       min: 0,
-    },
-    comments: {
-      type: [Schema.Types.ObjectId],
-      ref: "Post",
-      default: [],
     },
     commentCount: {
       type: Number,
@@ -97,9 +85,8 @@ const postSchema = new Schema<IPost>(
   { timestamps: true },
 );
 
-postSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
+postSchema.index({ expiredAt: 1 });
 postSchema.index({ user: 1, createdAt: -1 });
-postSchema.index({ replyTo: 1, createdAt: 1 });
 postSchema.index({ hashtags: 1, createdAt: -1 });
 postSchema.index({ content: "text" });
 

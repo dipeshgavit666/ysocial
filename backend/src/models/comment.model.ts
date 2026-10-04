@@ -5,8 +5,12 @@ export interface IComment extends Document {
   user: Types.ObjectId;
   post: Types.ObjectId;
   content: string;
-  likes: Types.ObjectId;
+  likes: Types.ObjectId[];
+  likeCount: number;
+  replyCount: number;
+  parentComment: Types.ObjectId | null;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const commentSchema = new Schema<IComment>(
@@ -24,11 +28,27 @@ const commentSchema = new Schema<IComment>(
     content: {
       type: String,
       required: true,
-      maxLength: 200,
+      maxLength: 500,
     },
     likes: {
-      type: Schema.Types.ObjectId,
+      type: [Schema.Types.ObjectId],
       ref: "User",
+      default: [],
+    },
+    likeCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    replyCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    parentComment: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
     },
   },
   {
@@ -39,7 +59,7 @@ const commentSchema = new Schema<IComment>(
   },
 );
 
-commentSchema.index({ user: 1, post: 1 }, { unique: true });
-commentSchema.index({ post: 1, createdAt: -1 });
+commentSchema.index({ post: 1, parentComment: 1, createdAt: -1 });
+commentSchema.index({ parentComment: 1, createdAt: 1 });
 
 export const Comment = mongoose.model<IComment>("Comment", commentSchema);

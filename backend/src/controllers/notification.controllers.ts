@@ -4,7 +4,6 @@ import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
 import type { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import { Comment } from "../models/comment.model";
 import { User } from "../models/user.models";
 import { Notification } from "../models/notification.models";
 

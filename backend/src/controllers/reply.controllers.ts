@@ -23,7 +23,7 @@ const createReply = asyncHandler(async (req: Request, res: Response) => {
 
   await Post.findByIdAndUpdate(replyTo._id, {
     $inc: {
-      replyCount: 1,
+      commentCount: 1,
     },
   });
 

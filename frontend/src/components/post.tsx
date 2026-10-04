@@ -10,7 +10,7 @@
 //       <p>{post.content}</p>
 //       <div className="flex gap-4 text-neutral-400 text-sm mt-2">
 //         <span>{post.likeCount} likes</span>
-//         <span>{post.replyCount} replies</span>
+//         <span>{post.commentCount} replies</span>
 //       </div>
 //     </div>
 //   );

@@ -138,7 +138,7 @@ export function HomeFeed() {
                     {likedPostIds.has(post._id) ? "♥" : "♡"} {post.likeCount}
                   </button>
                   <span className="text-neutral-400">
-                    {post.replyCount} replies
+                    {post.commentCount} replies
                   </span>
                 </div>
               </Link>

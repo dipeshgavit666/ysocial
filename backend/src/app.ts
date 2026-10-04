@@ -22,12 +22,14 @@ app.use(
 import healthCheckRouter from "./routes/healthcheck.routes.ts";
 import postRouter from "./routes/post.routes.ts";
 import userRouter from "./routes/user.routes.ts";
+import commentRouter from "./routes/comment.routes.ts";
 import { ENV } from "./config/env.ts";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/comment", commentRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Y Social");

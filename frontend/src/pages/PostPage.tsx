@@ -63,7 +63,7 @@ export function PostPage() {
         </div>
         <div className="text-neutral-300">{post.content}</div>
         <div className="text-neutral-500 text-sm mt-2">
-          {post.likeCount} Likes • {post.replyCount} Replies
+          {post.likeCount} Likes • {post.commentCount} Replies
         </div>
       </div>
 

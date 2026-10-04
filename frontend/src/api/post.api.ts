@@ -5,7 +5,7 @@ export interface Post {
   content: string;
   user: { _id: string; username: string };
   likeCount: number;
-  replyCount: number;
+  commentCount: number;
   createdAt: number;
 }
 

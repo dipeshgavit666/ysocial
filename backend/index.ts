@@ -13,7 +13,7 @@ app.get("/protected", async (req, res) => {
   const { isAuthenticated, userId } = getAuth(req);
 
   if (!isAuthenticated) {
-    res.status(401).json({ error: "Unuserized" });
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 

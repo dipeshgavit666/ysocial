@@ -46,7 +46,7 @@ const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
 
 const createPost = asyncHandler(async (req: Request, res: Response) => {
   const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unuserized");
+  if (!clerkId) throw new ApiError(401, "Unauserized");
 
   const content = String(req.body.content ?? "").trim();
   const imageFile = req.file;
@@ -72,13 +72,13 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  const POST_TTL_MS = 24 * 60 * 60 * 1000;
+  const POST_T_MS = 24 * 60 * 60 * 1000;
 
   const post = await Post.create({
     user: user._id,
     content,
     imageUrl,
-    expiredAt: new Date(Date.now() + POST_TTL_MS),
+    expiredAt: new Date(Date.now() + POST_T_MS),
   });
 
   return res

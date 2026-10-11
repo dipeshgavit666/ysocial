@@ -120,7 +120,9 @@ export function HomeFeed() {
                 to={`/post/${post._id}`}
                 className="block border border-neutral-700 rounded-lg p-4 text-neutral-50 hover:border-neutral-500"
               >
-                <p className="font-bold">{post.user.username}</p>
+                <p className="font-bold">
+                  {post.user?.username ?? "deleted user"}
+                </p>
                 <p>{post.content}</p>
                 <div className="flex gap-4 text-sm mt-2">
                   <button

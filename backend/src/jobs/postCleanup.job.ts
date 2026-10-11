@@ -19,7 +19,6 @@ export const runPostCleanup = async () => {
   try {
     const expiredPostIds = await Post.find({
       expiredAt: { $lte: new Date() },
-      replyTo: null,
     }).distinct("_id");
 
     if (!expiredPostIds.length) {
@@ -30,24 +29,17 @@ export const runPostCleanup = async () => {
       `[POST CLEANUP] Found ${expiredPostIds.length} expired post(s).`,
     );
 
-    // Replies stored as posts (replyTo -> expired post)
-    const replyIds = await Post.find({
-      replyTo: { $in: expiredPostIds },
-    }).distinct("_id");
-
-    const allPostIds = [...expiredPostIds, ...replyIds];
-
     const [commentsResult, notificationsResult] = await Promise.all([
-      Comment.deleteMany({ post: { $in: allPostIds } }),
-      Notification.deleteMany({ post: { $in: allPostIds } }),
+      Comment.deleteMany({ post: { $in: expiredPostIds } }),
+      Notification.deleteMany({ post: { $in: expiredPostIds } }),
     ]);
     console.log(
       `[POST CLEANUP] Deleted ${commentsResult.deletedCount} comment(s) and ${notificationsResult.deletedCount} notification(s).`,
     );
 
-    const postsResult = await Post.deleteMany({ _id: { $in: allPostIds } });
+    const postsResult = await Post.deleteMany({ _id: { $in: expiredPostIds } });
     console.log(
-      `[POST CLEANUP] Deleted ${postsResult.deletedCount} post(s) (${expiredPostIds.length} expired + ${replyIds.length} replies).`,
+      `[POST CLEANUP] Deleted ${postsResult.deletedCount} expired post(s).`,
     );
   } catch (error) {
     console.error("[POST CLEANUP ERROR]", error);
@@ -57,7 +49,7 @@ export const runPostCleanup = async () => {
   }
 };
 
-export const startPostCleamupJob = () => {
+export const startPostCleanupJob = () => {
   // Every 5 minutes
   cron.schedule("*/5 * * * *", runPostCleanup);
   console.log("[POST CLEANUP] Job scheduled: every 5 minutes.");

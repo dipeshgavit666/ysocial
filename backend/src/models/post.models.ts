@@ -28,7 +28,7 @@ const postSchema = new Schema<IPost>(
     },
     content: {
       type: String,
-      required: true,
+      default: "",
       maxlength: [3000, "Post content cannot exceed 3000 characters"],
     },
     imageUrl: {
@@ -80,6 +80,7 @@ const postSchema = new Schema<IPost>(
     ],
     expiredAt: {
       type: Date,
+      required: true,
     },
   },
   { timestamps: true },

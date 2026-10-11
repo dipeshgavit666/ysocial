@@ -5,11 +5,11 @@ export function ProtectedRoute() {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <div className="p-4 text-neutral-50">Loading...</div>;
   }
 
   if (!isSignedIn) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/sign-in" replace />;
   }
 
   return <Outlet />;

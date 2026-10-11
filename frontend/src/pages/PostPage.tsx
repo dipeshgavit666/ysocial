@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router";
-import { getSinglePost, getReplies, createReply } from "../api/post.api";
-import type { Post } from "../api/post.api";
+import { getSinglePost, getComments, createComment } from "../api/post.api";
+import type { Post, Comment } from "../api/post.api";
 import { useUser } from "@clerk/react";
 export function PostPage() {
   const { postId } = useParams<{ postId: string }>();
   const { user } = useUser();
 
   const [post, setPost] = useState<Post | null>(null);
-  const [replies, setReplies] = useState<Post[]>([]);
+  const [replies, setReplies] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -21,10 +21,10 @@ export function PostPage() {
       try {
         const [postData, repliesData] = await Promise.all([
           getSinglePost(postId!),
-          getReplies(postId!),
+          getComments(postId!),
         ]);
-        setPost(postData.singlePost);
-        setReplies(repliesData.replies);
+        setPost(postData.post);
+        setReplies(repliesData.comments);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load post");
       } finally {
@@ -41,8 +41,8 @@ export function PostPage() {
 
     setIsReplying(true);
     try {
-      const data = await createReply(postId, replyContent);
-      setReplies([data.reply, ...replies]);
+      const data = await createComment(postId, replyContent);
+      setReplies([data.comment, ...replies]);
       setReplyContent("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to post reply");
@@ -59,7 +59,7 @@ export function PostPage() {
     <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4">
       <div className="border border-neutral-700 rounded-lg p-4">
         <div className="font-semibold text-neutral-50">
-          {post.user.username}
+          {post.user?.username ?? "deleted user"}
         </div>
         <div className="text-neutral-300">{post.content}</div>
         <div className="text-neutral-500 text-sm mt-2">
@@ -95,7 +95,7 @@ export function PostPage() {
             className="border border-neutral-700 rounded-lg p-4"
           >
             <div className="font-semibold text-neutral-50">
-              {reply.user.username}
+              {reply.user?.username ?? "deleted user"}
             </div>
             <div className="text-neutral-300">{reply.content}</div>
           </div>

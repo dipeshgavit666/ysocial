@@ -1,34 +1,48 @@
 import { get, post, patch } from "../lib/api-client";
 
+export interface PostAuthor {
+  _id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
+}
+
 export interface Post {
   _id: string;
   content: string;
-  user: { _id: string; username: string };
+  imageUrl?: string;
+  user: PostAuthor;
   likeCount: number;
   commentCount: number;
-  createdAt: number;
+  createdAt: string;
+  expiredAt: string;
 }
 
-interface getPostsResponse {
+export interface Comment {
+  _id: string;
+  content: string;
+  user: PostAuthor;
+  likeCount: number;
+  replyCount: number;
+  parentComment: string | null;
+  createdAt: string;
+}
+
+interface GetPostsResponse {
+  posts: Post[];
   page: number;
   limit: number;
-  posts: Post[];
-}
-
-export function getSinglePost(postId: string) {
-  return get<{ singlePost: Post }>(`/posts/${postId}`);
-}
-
-export function getReplies(postId: string) {
-  return get<{ replies: Post[] }>(`/posts/${postId}/replies`);
-}
-
-export function createReply(postId: string, content: string) {
-  return post<{ reply: Post }>(`/posts/${postId}`, { content });
+  total: number;
+  hasMore: boolean;
 }
 
 export function getAllPosts(page = 1) {
-  return get<getPostsResponse>(`/posts?page=${page}`);
+  return get<GetPostsResponse>(`/posts?page=${page}`);
+}
+
+export function getSinglePost(postId: string) {
+  return get<{ post: Post }>(`/posts/${postId}`);
 }
 
 export function createPost(content: string) {
@@ -36,5 +50,13 @@ export function createPost(content: string) {
 }
 
 export function toggleLike(postId: string) {
-  return patch<{ liked: boolean }>(`/posts/${postId}/like`);
+  return patch<{ liked: boolean; likeCount: number }>(`/posts/${postId}/like`);
+}
+
+export function getComments(postId: string) {
+  return get<{ comments: Comment[] }>(`/comments/post/${postId}`);
+}
+
+export function createComment(postId: string, content: string) {
+  return post<{ comment: Comment }>(`/comments/post/${postId}`, { content });
 }

@@ -1,20 +1,33 @@
+const required = (name: string): string => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+};
+
+const nodeEnv = process.env.NODE_ENV ?? "development";
+
 export const ENV = {
-  PORT: process.env.PORT || 3000,
-  NODE_ENV: process.env.NODE_ENV,
-  DB_NAME: process.env.DB_NAME,
-  MONGO_URI: process.env.MONGO_URI,
-  CORS_ORIGIN: process.env.CORS_ORIGIN,
+  PORT: Number(process.env.PORT) || 3000,
+  NODE_ENV: nodeEnv,
+  IS_PROD: nodeEnv === "production",
 
-  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
-  ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY,
+  MONGO_URI:
+    nodeEnv === "production"
+      ? required("MONGO_URI")
+      : (process.env.MONGO_URI ?? "mongodb://localhost:27017"),
 
-  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
-  REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY,
+  CORS_ORIGIN: (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean),
 
-  CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
-  CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  CLERK_PUBLISHABLE_KEY: required("CLERK_PUBLISHABLE_KEY"),
+  CLERK_SECRET_KEY: required("CLERK_SECRET_KEY"),
 
+  // Optional: only needed for image uploads.
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
 };

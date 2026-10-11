@@ -14,7 +14,6 @@ export interface INotification extends Document {
   type: NotificationType;
   post?: Types.ObjectId; //relavent post
   comment?: Types.ObjectId; //relavent comment
-  follower: Types.ObjectId; //relavent  follower
   isRead: boolean;
   createdAt: Date;
 }
@@ -33,6 +32,7 @@ const notificationSchema = new Schema<INotification>(
     },
     type: {
       type: String,
+      required: true,
       enum: [
         "follow_request",
         "follow_accept",
@@ -51,10 +51,6 @@ const notificationSchema = new Schema<INotification>(
       ref: "Comment",
       default: null,
     },
-    follower: {
-      type: Schema.Types.ObjectId,
-      ref: "Connections",
-    },
     isRead: {
       type: Boolean,
       default: false,
@@ -63,7 +59,7 @@ const notificationSchema = new Schema<INotification>(
   { timestamps: true },
 );
 
-notificationSchema.index({ recipient: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ to: 1, isRead: 1, createdAt: -1 });
 
 export const Notification = mongoose.model<INotification>(
   "Notification",

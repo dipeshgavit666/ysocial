@@ -2,23 +2,13 @@ import { Post } from "../models/post.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
+import { PUBLIC_USER_FIELDS, notExpired } from "../utils/constants";
 import type { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
-import { getAuth } from "@clerk/express";
 import { Comment } from "../models/comment.model";
-import { User } from "../models/user.models";
 import { Notification } from "../models/notification.models";
 
-const USER_FIELDS = "username firstName lastName profileImage";
-
-const notExpired = () => ({
-  $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
-});
-
 const createComment = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const postId = String(req.params.postId);
   if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
@@ -28,8 +18,7 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Comment cannot exceed 500 characters");
   }
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   const post = await Post.findOne({ _id: postId, ...notExpired() }).select(
     "user",
@@ -77,7 +66,7 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  await comment.populate("user", USER_FIELDS);
+  await comment.populate("user", PUBLIC_USER_FIELDS);
 
   return res
     .status(201)
@@ -100,7 +89,7 @@ const getComments = asyncHandler(async (req: Request, res: Response) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("user", USER_FIELDS)
+      .populate("user", PUBLIC_USER_FIELDS)
       .lean(),
     Comment.countDocuments(filter),
   ]);
@@ -139,7 +128,7 @@ const getReplies = asyncHandler(async (req: Request, res: Response) => {
       .sort({ createdAt: 1 })
       .skip(skip)
       .limit(limit)
-      .populate("user", USER_FIELDS)
+      .populate("user", PUBLIC_USER_FIELDS)
       .lean(),
     Comment.countDocuments(filter),
   ]);
@@ -160,16 +149,12 @@ const getReplies = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deleteComment = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const commentId = String(req.params.commentId);
   if (!isValidObjectId(commentId)) {
     throw new ApiError(400, "Invalid comment ID");
   }
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   const comment = await Comment.findById(commentId);
   if (!comment) throw new ApiError(404, "Comment not found");
@@ -205,21 +190,17 @@ const deleteComment = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const likeComment = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const commentId = String(req.params.commentId);
   if (!isValidObjectId(commentId)) {
     throw new ApiError(400, "Invalid comment ID");
   }
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   const liked = await Comment.findOneAndUpdate(
     { _id: commentId, likes: { $ne: user._id } },
     { $addToSet: { likes: user._id }, $inc: { likeCount: 1 } },
-    { new: true },
+    { returnDocument: "after" },
   ).select("likeCount");
 
   if (liked) {
@@ -237,7 +218,7 @@ const likeComment = asyncHandler(async (req: Request, res: Response) => {
   const unliked = await Comment.findOneAndUpdate(
     { _id: commentId, likes: user._id },
     { $pull: { likes: user._id }, $inc: { likeCount: -1 } },
-    { new: true },
+    { returnDocument: "after" },
   ).select("likeCount");
 
   if (!unliked) throw new ApiError(404, "Comment not found");

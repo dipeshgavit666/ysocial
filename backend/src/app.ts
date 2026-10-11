@@ -1,45 +1,50 @@
 import express from "express";
-import type { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
+import { clerkMiddleware } from "@clerk/express";
 
-const app: Application = express();
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
-app.use(cookieParser());
+import { ENV } from "./config/env";
+import { errorHandler, notFound } from "./middlewares/error.middleware";
+import healthCheckRouter from "./routes/healthcheck.routes";
+import postRouter from "./routes/post.routes";
+import commentRouter from "./routes/comment.routes";
+import userRouter from "./routes/user.routes";
+import notificationRouter from "./routes/notification.routes";
+
+const app = express();
 
 app.use(
   cors({
-    origin: ENV.CORS_ORIGIN?.split(",") || "http://localhost:5173",
-    credentials: true,
+    origin: ENV.CORS_ORIGIN,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
-// import routes
-import healthCheckRouter from "./routes/healthcheck.routes.ts";
-import postRouter from "./routes/post.routes.ts";
-import userRouter from "./routes/user.routes.ts";
-import commentRouter from "./routes/comment.routes.ts";
-import { ENV } from "./config/env.ts";
+const authorizedParties = Array.isArray(ENV.CORS_ORIGIN)
+  ? ENV.CORS_ORIGIN.flat()
+  : ENV.CORS_ORIGIN
+    ? [ENV.CORS_ORIGIN]
+    : undefined;
 
-app.use("/api/v1/healthcheck", healthCheckRouter);
+app.use(
+  clerkMiddleware({
+    authorizedParties,
+  }),
+);
 
-app.use("/api/v1/posts", postRouter);
-app.use("/api/v1/user", userRouter);
-app.use("/api/comment", commentRouter);
-
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("Welcome to Y Social");
 });
 
-app.use((req: Request, res: Response, next: NextFunction): void => {
-  res.status(500).json({
-    success: false,
-    message: "Sorry something is wrong with our server!",
-  });
-});
+app.use("/api/v1/healthcheck", healthCheckRouter);
+app.use("/api/v1/posts", postRouter);
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/notifications", notificationRouter);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

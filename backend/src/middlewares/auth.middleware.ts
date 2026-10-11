@@ -1,26 +1,24 @@
-import type { Request, Response, NextFunction } from "express";
+import { getAuth } from "@clerk/express";
 import { asyncHandler } from "../utils/async-handler";
 import { ApiError } from "../utils/api-error";
-import { getAuth } from "@clerk/express";
+import { findOrCreateUser } from "../services/user.service";
+import type { IUser } from "../models/user.models";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        _id: string;
-        [key: string]: any;
-      };
+      /** The signed-in user's MongoDB document. Set by `protectRoute`. */
+      user?: IUser;
     }
   }
 }
 
-export const protectRoute = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { isAuthenticated } = getAuth(req);
-    if (!isAuthenticated) {
-      throw new ApiError(401, "Unuserized - you must be logged in");
-    }
+export const protectRoute = asyncHandler(async (req, _res, next) => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized - please sign in");
+  }
 
-    next();
-  },
-);
+  req.user = await findOrCreateUser(userId);
+  next();
+});

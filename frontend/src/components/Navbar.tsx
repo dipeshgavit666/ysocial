@@ -31,13 +31,13 @@ export function Navbar() {
           </Show>
 
           <Show when="signed-out">
-            <SignInButton>
+            <SignInButton mode="redirect">
               <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:text-white">
                 Log In
               </button>
             </SignInButton>
 
-            <SignUpButton>
+            <SignUpButton mode="redirect">
               <button className="rounded-md bg-white px-3 py-2 text-sm font-medium text-black hover:bg-gray-200">
                 Sign Up
               </button>

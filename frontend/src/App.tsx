@@ -4,21 +4,26 @@ import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 import { HomeFeed } from "./pages/HomeFeed";
-import { ProfilePage } from "./pages/ProfilePage";
 import { PostPage } from "./pages/PostPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { SignInPage, SignUpPage } from "./pages/AuthPages";
 
 function App() {
   return (
     <Routes>
-      <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />}>
-          <Route path="/" element={<HomeFeed />} />
+      {/* Clerk's hosted-in-app auth screens (the /* lets Clerk use sub-paths) */}
+      <Route path="/sign-in/*" element={<SignInPage />} />
+      <Route path="/sign-up/*" element={<SignUpPage />} />
 
-          <Route path="/post/:postId" element={<PostPage />} />
+      <Route element={<Layout />}>
+        {/* Reading is public; the UI hides write actions when signed out */}
+        <Route path="/" element={<HomeFeed />} />
+        <Route path="/post/:postId" element={<PostPage />} />
+        <Route path="/profile/:username" element={<ProfilePage />} />
 
+        {/* Requires a signed-in user */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
-
-          <Route path="/profile/:username" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>

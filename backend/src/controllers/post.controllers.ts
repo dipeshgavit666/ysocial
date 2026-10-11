@@ -3,24 +3,17 @@ import { User } from "../models/user.models";
 import { ApiError } from "../utils/api-error";
 import { ApiResponse } from "../utils/api-response";
 import { asyncHandler } from "../utils/async-handler";
+import {
+  POST_TTL_MS,
+  PUBLIC_USER_FIELDS,
+  notExpired,
+} from "../utils/constants";
 import type { Request, Response } from "express";
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import type { QueryFilter } from "mongoose";
-import { getAuth } from "@clerk/express";
 import cloudinary from "../config/cloudinary";
 import type { UploadApiResponse } from "cloudinary";
 import { Notification } from "../models/notification.models";
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        _id: string;
-        [key: string]: any;
-      };
-    }
-  }
-}
 
 const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
   return new Promise((resolve, reject) => {
@@ -45,9 +38,6 @@ const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
 };
 
 const createPost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauserized");
-
   const content = String(req.body.content ?? "").trim();
   const imageFile = req.file;
 
@@ -58,8 +48,7 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Post content cannot exceed 3000 characters");
   }
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   let imageUrl: string | undefined;
   if (imageFile) {
@@ -72,14 +61,14 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  const POST_T_MS = 24 * 60 * 60 * 1000;
-
   const post = await Post.create({
     user: user._id,
     content,
     imageUrl,
-    expiredAt: new Date(Date.now() + POST_T_MS),
+    expiredAt: new Date(Date.now() + POST_TTL_MS),
   });
+
+  await post.populate("user", PUBLIC_USER_FIELDS);
 
   return res
     .status(201)
@@ -87,20 +76,16 @@ const createPost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const likePost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const postId = String(req.params.postId);
   if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   // Try to like: only matches if the user hasn't liked yet
   const likedPost = await Post.findOneAndUpdate(
     { _id: postId, likes: { $ne: user._id } },
     { $addToSet: { likes: user._id }, $inc: { likeCount: 1 } },
-    { new: true },
+    { returnDocument: "after" },
   ).select("user likeCount");
 
   if (likedPost) {
@@ -128,7 +113,7 @@ const likePost = asyncHandler(async (req: Request, res: Response) => {
   const unlikedPost = await Post.findOneAndUpdate(
     { _id: postId, likes: user._id },
     { $pull: { likes: user._id }, $inc: { likeCount: -1 } },
-    { new: true },
+    { returnDocument: "after" },
   ).select("likeCount");
 
   if (!unlikedPost) throw new ApiError(404, "Post not found");
@@ -145,9 +130,6 @@ const likePost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const updatePost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const postId = String(req.params.postId);
   if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
@@ -156,8 +138,7 @@ const updatePost = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Post content cannot exceed 3000 characters");
   }
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   const post = await Post.findById(postId);
   if (!post) throw new ApiError(404, "Post not found");
@@ -172,6 +153,7 @@ const updatePost = asyncHandler(async (req: Request, res: Response) => {
   }
 
   post.content = content;
+  post.isEdited = true;
   await post.save();
 
   return res
@@ -180,14 +162,10 @@ const updatePost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deletePost = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: clerkId } = getAuth(req);
-  if (!clerkId) throw new ApiError(401, "Unauthorized");
-
   const postId = String(req.params.postId);
   if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
-  const user = await User.findOne({ clerkId }).select("_id");
-  if (!user) throw new ApiError(404, "User not found");
+  const user = req.user!;
 
   const post = await Post.findById(postId).select("user");
   if (!post) throw new ApiError(404, "Post not found");
@@ -208,18 +186,15 @@ const getPosts = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
   const skip = (page - 1) * limit;
 
-  const filter: QueryFilter<IPost> = {
-    replyTo: null,
-    $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
-  };
+  const filter: QueryFilter<IPost> = notExpired();
 
   const [posts, total] = await Promise.all([
     Post.find(filter)
-      .select("-likes -shares -comments")
+      .select("-likes -shares")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("user", "username firstName lastName profileImage")
+      .populate("user", PUBLIC_USER_FIELDS)
       .lean(),
     Post.countDocuments(filter),
   ]);
@@ -240,17 +215,12 @@ const getPosts = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getSinglePost = asyncHandler(async (req: Request, res: Response) => {
-  const { postId } = req.params;
+  const postId = String(req.params.postId);
+  if (!isValidObjectId(postId)) throw new ApiError(400, "Invalid post ID");
 
-  const post = await Post.findById(postId)
-    .populate("user", "username firstName lastName profileImage")
-    .populate({
-      path: "comments",
-      populate: {
-        path: "user",
-        select: "username firstName lastName profileImage",
-      },
-    });
+  const post = await Post.findOne({ _id: postId, ...notExpired() })
+    .select("-likes -shares")
+    .populate("user", PUBLIC_USER_FIELDS);
 
   if (!post) {
     throw new ApiError(404, "Post not found");
@@ -268,22 +238,21 @@ const getUserPosts = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
   const skip = (page - 1) * limit;
 
-  const user = await User.findOne({ username }).select(
-    "_id username firstName lastName profileImage",
-  );
+  const user = await User.findOne({
+    username: String(username).toLowerCase(),
+  }).select("_id username firstName lastName profileImage");
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
   const filter: QueryFilter<IPost> = {
     user: user._id,
-    replyTo: null,
-    $or: [{ expiredAt: null }, { expiredAt: { $gt: new Date() } }],
+    ...notExpired(),
   };
 
   const [posts, total] = await Promise.all([
     Post.find(filter)
-      .select("-likes -shares -comments")
+      .select("-likes -shares")
       .sort({ isPinned: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)

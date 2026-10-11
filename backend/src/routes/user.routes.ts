@@ -1,24 +1,20 @@
 import { Router } from "express";
 import {
-  syncUser,
   getUserProfile,
-  updateUser,
   getCurrentUser,
-  logoutUser,
+  updateUser,
   followUser,
 } from "../controllers/user.controllers";
 import { protectRoute } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-//public route
-router.route("/profile/:username").get(protectRoute, getUserProfile);
+// public
+router.get("/profile/:username", getUserProfile);
 
-//protected route
-router.route("/sync").post(protectRoute, syncUser);
-router.route("/me").get(protectRoute, getCurrentUser);
-router.route("/logout").post(protectRoute, logoutUser);
-router.route("/profile").put(protectRoute, updateUser);
-router.route("/follow/:targetUserId").post(protectRoute, followUser);
+// protected
+router.get("/me", protectRoute, getCurrentUser);
+router.put("/me", protectRoute, updateUser);
+router.post("/:targetUserId/follow", protectRoute, followUser);
 
 export default router;

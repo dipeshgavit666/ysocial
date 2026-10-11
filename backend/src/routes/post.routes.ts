@@ -13,16 +13,15 @@ import upload from "../middlewares/uplaod.middleware";
 
 const router = Router();
 
-// public route
+// public
+router.get("/", getPosts);
+router.get("/user/:username", getUserPosts);
+router.get("/:postId", getSinglePost);
 
-router.route("/").get(getPosts);
-router.route("/:postId").get(getSinglePost);
-router.route("/user/:username").get(getUserPosts);
-
-// protected route
-router.route("/").post(protectRoute, upload.single("image"), createPost);
-router.route("/").post(protectRoute, likePost);
-router.route("/:postId").delete(protectRoute, deletePost);
-router.route("/:postId").put(protectRoute, updatePost);
+// protected
+router.post("/", protectRoute, upload.single("image"), createPost);
+router.patch("/:postId/like", protectRoute, likePost);
+router.put("/:postId", protectRoute, updatePost);
+router.delete("/:postId", protectRoute, deletePost);
 
 export default router;

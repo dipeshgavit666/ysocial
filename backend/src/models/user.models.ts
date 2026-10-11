@@ -1,14 +1,10 @@
-import bcrypt from "bcryptjs";
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import jwt, { type Secret } from "jsonwebtoken";
-import { ENV } from "../config/env";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
   clerkId: string;
   username: string;
   email: string;
-  password: string;
   firstName: string;
   lastName?: string;
   bio?: string;
@@ -16,8 +12,6 @@ export interface IUser extends Document {
   website?: string;
   isVerified: boolean;
   isPrivate: boolean;
-  posts: Types.ObjectId;
-  postCount: number;
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
   createdAt: Date;
@@ -53,15 +47,9 @@ const userSchema = new Schema<IUser>(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
     },
-    password: {
-      type: String,
-      required: [true, "password is required"],
-      minlength: [6, "password must be atleast 6 characters"],
-      select: false,
-    },
     firstName: {
       type: String,
-      required: [true, "First name is required"],
+      default: "",
       trim: true,
       maxlength: [50, "First name cannot exceed 50 characters"],
     },
@@ -73,7 +61,7 @@ const userSchema = new Schema<IUser>(
     bio: {
       type: String,
       default: "",
-      maxlength: [200, "Bio cannot exceed 300 characters"],
+      maxlength: [200, "Bio cannot exceed 200 characters"],
     },
     profileImage: {
       type: String,
@@ -91,15 +79,6 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    posts: {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
-    postCount: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
     followers: {
       type: [Schema.Types.ObjectId],
       ref: "User",
@@ -116,43 +95,6 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) {
-    return;
-  }
-  this.password = await bcrypt.hash(this.password, 12);
-});
-
-userSchema.methods.isPasswordCorrect = async function (password: string) {
-  return await bcrypt.compare(password, this.password);
-};
-
-userSchema.methods.generateAccessToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-      email: this.email,
-      username: this.username,
-    },
-    ENV.ACCESS_TOKEN_SECRET as Secret,
-    {
-      expiresIn: ENV.ACCESS_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
-    },
-  );
-};
-
-userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-    },
-    ENV.REFRESH_TOKEN_SECRET as Secret,
-    {
-      expiresIn: ENV.REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
-    },
-  );
-};
-
-userSchema.index({ name: "text", bio: "text" });
+userSchema.index({ username: "text", firstName: "text", lastName: "text" });
 
 export const User = mongoose.model<IUser>("User", userSchema);

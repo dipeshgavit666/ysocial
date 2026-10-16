@@ -19,4 +19,15 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // ChaiUI registry files ship variant helpers alongside components.
+    files: [
+      'src/components/ui/**/*.tsx',
+      'src/components/theme-provider.tsx',
+      'src/lib/utils.ts',
+    ],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

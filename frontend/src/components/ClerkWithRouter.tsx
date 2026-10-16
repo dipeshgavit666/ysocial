@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/react";
 import { useNavigate } from "react-router";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 
 // const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const publishableKey =
@@ -18,6 +19,7 @@ export function ClerkWithRouter({ children }: { children: React.ReactNode }) {
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       afterSignOutUrl="/"
+      appearance={clerkAppearance}
     >
       {children}
     </ClerkProvider>

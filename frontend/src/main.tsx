@@ -4,13 +4,16 @@ import { BrowserRouter } from "react-router";
 import "./index.css";
 import App from "./App";
 import { ClerkWithRouter } from "./components/ClerkWithRouter";
+import { ThemeProvider } from "./components/theme-provider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ClerkWithRouter>
-        <App />
-      </ClerkWithRouter>
-    </BrowserRouter>
+    <ThemeProvider defaultTheme="dark">
+      <BrowserRouter>
+        <ClerkWithRouter>
+          <App />
+        </ClerkWithRouter>
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>,
 );

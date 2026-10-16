@@ -1,10 +1,66 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router";
-import { getSinglePost, getComments, createComment } from "../api/post.api";
-import type { Post, Comment } from "../api/post.api";
+import { Link, useNavigate, useParams } from "react-router";
+import { ArrowLeft, Heart, MessageCircle } from "lucide-react";
 import { useUser } from "@clerk/react";
+import {
+  getSinglePost,
+  getComments,
+  createComment,
+  toggleLike,
+} from "@/api/post.api";
+import type { Post, Comment } from "@/api/post.api";
+import { relativeTime } from "@/lib/time";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+function initials(name?: string) {
+  return name ? name.slice(0, 2).toUpperCase() : "?";
+}
+
+function Reply({ reply }: { reply: Comment }) {
+  const username = reply.user?.username ?? "deleted user";
+  return (
+    <div className="flex gap-3 rounded-xl border border-dashed border-card-edge p-4 transition-colors hover:border-card-edge-hover">
+      <Avatar className="size-8 shrink-0 border border-dashed border-card-edge">
+        <AvatarImage src={reply.user?.profileImage} alt={username} />
+        <AvatarFallback>{initials(username)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/profile/${username}`}
+            className="truncate text-sm font-semibold text-foreground hover:underline"
+          >
+            {username}
+          </Link>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-sm text-muted-foreground">
+            {relativeTime(reply.createdAt)}
+          </span>
+        </div>
+        <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
+          {reply.content}
+        </p>
+        <div className="mt-1.5 flex items-center gap-6 text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Heart className="size-4.5" aria-hidden="true" />
+            <span className="text-xs tabular-nums">{reply.likeCount}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <MessageCircle className="size-4.5" aria-hidden="true" />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PostPage() {
-  const { postId } = useParams<{ postId: string }>();
+  const { postId } = useParams();
+  const navigate = useNavigate();
   const { user } = useUser();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -13,6 +69,7 @@ export function PostPage() {
   const [error, setError] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [isReplying, setIsReplying] = useState(false);
+  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
     if (!postId) return;
@@ -35,6 +92,19 @@ export function PostPage() {
     fetchData();
   }, [postId]);
 
+  async function handleLike() {
+    if (!post) return;
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    setPost({ ...post, likeCount: post.likeCount + (nextLiked ? 1 : -1) });
+    try {
+      await toggleLike(post._id);
+    } catch {
+      setLiked(!nextLiked);
+      setPost({ ...post, likeCount: post.likeCount + (nextLiked ? -1 : 1) });
+    }
+  }
+
   async function handleReplySubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!postId || !replyContent.trim()) return;
@@ -51,56 +121,130 @@ export function PostPage() {
     }
   }
 
-  if (isLoading) return <div className="text-neutral-50">Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!post) return <div className="text-neutral-400">Post not found.</div>;
-
   return (
-    <div className="bg-neutral-950 max-w-2xl mx-auto p-4 space-y-4">
-      <div className="border border-neutral-700 rounded-lg p-4">
-        <div className="font-semibold text-neutral-50">
-          {post.user?.username ?? "deleted user"}
-        </div>
-        <div className="text-neutral-300">{post.content}</div>
-        <div className="text-neutral-500 text-sm mt-2">
-          {post.likeCount} Likes • {post.commentCount} Replies
-        </div>
-      </div>
-
-      {user && (
-        <form
-          onSubmit={handleReplySubmit}
-          className="border border-neutral-700 rounded-lg p-4 space-y-2"
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          aria-label="Back"
+          onClick={() => navigate(-1)}
+          className="inline-flex size-9 cursor-pointer items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
         >
-          <textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
-            placeholder="Write a reply..."
-            className="bg-neutral-800 text-neutral-300 placeholder:text-neutral-500 border border-neutral-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            disabled={isReplying}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
-          >
-            {isReplying ? "Posting..." : "Post Reply"}
-          </button>
-        </form>
-      )}
-
-      <div className="space-y-4">
-        {replies.map((reply) => (
-          <div
-            key={reply._id}
-            className="border border-neutral-700 rounded-lg p-4"
-          >
-            <div className="font-semibold text-neutral-50">
-              {reply.user?.username ?? "deleted user"}
-            </div>
-            <div className="text-neutral-300">{reply.content}</div>
-          </div>
-        ))}
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+        <span className="text-base font-semibold text-foreground">Thread</span>
+        <span className="size-9" />
       </div>
+
+      {error && <Alert tone="danger">{error}</Alert>}
+
+      {isLoading ? (
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-3/4" />
+        </div>
+      ) : !post ? (
+        <p className="py-12 text-center text-sm text-muted-foreground">
+          Post not found.
+        </p>
+      ) : (
+        <>
+          <div className="flex gap-3 rounded-xl border border-dashed border-card-edge p-4">
+            <Avatar className="size-9 shrink-0 border border-dashed border-card-edge">
+              <AvatarImage
+                src={post.user?.profileImage}
+                alt={post.user?.username}
+              />
+              <AvatarFallback>{initials(post.user?.username)}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/profile/${post.user?.username}`}
+                  className="truncate text-sm font-semibold text-foreground hover:underline"
+                >
+                  {post.user?.username ?? "deleted user"}
+                </Link>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground">
+                  {relativeTime(post.createdAt)}
+                </span>
+              </div>
+              <p className="mt-0.5 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
+                {post.content}
+              </p>
+              {post.imageUrl && (
+                <img
+                  src={post.imageUrl}
+                  alt=""
+                  className="mt-3 max-h-96 w-full rounded-xl border border-dashed border-card-edge object-cover"
+                />
+              )}
+              <div className="mt-3 flex items-center gap-6 text-muted-foreground">
+                <button
+                  type="button"
+                  aria-label="Like"
+                  onClick={handleLike}
+                  className={cn(
+                    "inline-flex cursor-pointer items-center gap-1.5 transition-colors hover:text-foreground",
+                    liked && "text-red-500 hover:text-red-500",
+                  )}
+                >
+                  <Heart
+                    className={cn("size-4.5", liked && "fill-current")}
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs tabular-nums">
+                    {post.likeCount}
+                  </span>
+                </button>
+                <span className="inline-flex items-center gap-1.5">
+                  <MessageCircle className="size-4.5" aria-hidden="true" />
+                  <span className="text-xs tabular-nums">
+                    {post.commentCount}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {user && (
+            <form
+              onSubmit={handleReplySubmit}
+              className="flex gap-3 rounded-xl border border-dashed border-card-edge p-4"
+            >
+              <div className="min-w-0 flex-1">
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Say something..."
+                  maxLength={3000}
+                  rows={2}
+                  className="w-full resize-none bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground outline-none"
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={isReplying || !replyContent.trim()}
+                    className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {isReplying ? "Posting..." : "Reply"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-4">
+            {replies.map((reply) => (
+              <Reply key={reply._id} reply={reply} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

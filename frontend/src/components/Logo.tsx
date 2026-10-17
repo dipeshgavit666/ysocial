@@ -1,4 +1,4 @@
-import { AtSign } from "lucide-react";
+import logo from "@/assets/logo.svg";
 import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
@@ -10,7 +10,7 @@ export function Logo({ className }: { className?: string }) {
       )}
       aria-hidden="true"
     >
-      <AtSign className="size-7" strokeWidth={2.5} />
+      <img src={logo as string} alt="Y Social Logo" className="size-7" />
     </span>
   );
 }
